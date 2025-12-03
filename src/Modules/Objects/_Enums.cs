@@ -69,6 +69,10 @@ public class _Enums
 	/// </summary>
 	public static PlacedObject.Type EvilDangleFruit = new(nameof(EvilDangleFruit), true);
 	/// <summary>
+	/// Background flat light
+	/// </summary>
+	public static PlacedObject.Type BGFlatLight = new(nameof(BGFlatLight), true);
+	/// <summary>
 	/// Evil dangle fruit dialogue
 	/// </summary>
 	public static SLOracleBehaviorHasMark.MiscItemType EvilDangleFruitDialogue = new(nameof(EvilDangleFruitDialogue), true);

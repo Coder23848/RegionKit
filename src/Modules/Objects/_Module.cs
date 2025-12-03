@@ -172,7 +172,8 @@ public static class _Module
 			|| type == _Enums.LittlePlanet
 			|| type == _Enums.FanLight
 			|| type == _Enums.PCPlayerSensitiveLightSource
-			|| type == _Enums.WaterFallDepth)
+			|| type == _Enums.WaterFallDepth
+			|| type == _Enums.BGFlatLight)
 			res = new ObjectsPage.DevObjectCategories(DECORATIONS_POM_CATEGORY);
 		else if (type == _Enums.NoWallSlideZone
 			|| type == _Enums.ClimbablePole
@@ -252,6 +253,9 @@ public static class _Module
 				case nameof(_Enums.WaterFallDepth):
 					self.AddObject(new WaterFallDepth(self, pObj));
 					break;
+				case nameof(_Enums.BGFlatLight):
+					self.AddObject(new BGFlatLight(pObj));
+					break;
 			}
 			if (pObj.data is WormgrassRectData && !wormgrassDataFound)
 			{
@@ -317,6 +321,11 @@ public static class _Module
 		else if (tp == _Enums.EvilDangleFruit)
 		{
 			rep = new ConsumableRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj, "Consumable: " + tp.ToString());
+		}
+		else if (tp == _Enums.BGFlatLight)
+		{
+			bool newObject = CreateObjectIfNeeded();
+			rep = new BGFlatLightRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj, newObject);
 		}
 
 		// Create object or call orig
@@ -400,6 +409,10 @@ public static class _Module
 		{
 			self.data = new PlacedObject.ConsumableObjectData(self);
 		}
+		else if (self.type == _Enums.BGFlatLight)
+		{
+			self.data = new BGFlatLight.Data(self);
+		}
 		orig(self);
 	}
 
@@ -423,5 +436,6 @@ public static class _Module
 	{
 		Custom.rainWorld.Shaders["ColorEffects"] = FShader.CreateShader("ColorEffects", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/coloreffects")).LoadAsset<Shader>("Assets/ColorEffects.shader"));
 		Custom.rainWorld.Shaders["WaterFallDepth"] = FShader.CreateShader("WaterFallDepth", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/waterfalldepth")).LoadAsset<Shader>("Assets/Shaders/WaterFallDepth.shader"));
+		Custom.rainWorld.Shaders["BGFlatLight"] = FShader.CreateShader("BGFlatLight", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/bgflatlight")).LoadAsset<Shader>("Assets/Shaders/BGFlatLight.shader"));
 	}
 }
