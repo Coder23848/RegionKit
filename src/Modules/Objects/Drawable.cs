@@ -38,11 +38,13 @@ public class Drawable : CosmeticSprite
 		Midground,
 		Items,
 		Foreground,
+		Sand,
 		ForegroundLights,
 		Shortcuts,
 		Water,
 		GrabShaders,
 		Bloom,
+		WarpPoint,
 		HUD,
 		HUD2
 		#pragma warning restore 1591
