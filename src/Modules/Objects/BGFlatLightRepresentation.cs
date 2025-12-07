@@ -9,16 +9,11 @@ namespace RegionKit.Modules.Objects
 		private readonly BGFlatLightPanel panel;
 		private readonly FSprite panelLine;
 
-		public BGFlatLightRepresentation(DevUI owner, string IDstring, DevUINode parentNode, PlacedObject pObj, bool newObject) : base(owner, IDstring, parentNode, pObj, "BG Flat Light", true)
+		public BGFlatLightRepresentation(DevUI owner, string IDstring, DevUINode parentNode, PlacedObject pObj) : base(owner, IDstring, parentNode, pObj, "BG Flat Light", true)
 		{
 			fSprites.Add(panelLine = new FSprite("pixel") { anchorY = 0f });
 			subNodes.Add(panel = new BGFlatLightPanel(owner, IDstring, this, Data.panelPos));
 			owner.placedObjectsContainer.AddChild(panelLine);
-
-			if (newObject)
-			{
-				owner.room.AddObject(new BGFlatLight(pObj));
-			}
 		}
 
 		public override void Refresh()
@@ -37,17 +32,20 @@ namespace RegionKit.Modules.Objects
 			public BGFlatLightRepresentation Rep => (parentNode as BGFlatLightRepresentation)!;
 			public BGFlatLight.Data Data => (Rep.pObj.data as BGFlatLight.Data)!;
 
-			private Cycler modeCycler;
-			private BGFlatLightSlider strengthSlider, redSlider, greenSlider, blueSlider;
+			private readonly Cycler modeCycler, cloudCycler;
+			private readonly BGFlatLightSlider strengthSlider;
+			private BGFlatLightSlider redSlider, greenSlider, blueSlider;
 
 			private BGFlatLight.Mode lastMode;
 
-			public BGFlatLightPanel(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos) : base(owner, IDstring, parentNode, pos, new Vector2(250f, 45f), "BG Flat Light")
+			public BGFlatLightPanel(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos) : base(owner, IDstring, parentNode, pos, new Vector2(250f, 65f), "BG Flat Light")
 			{
-				subNodes.Add(modeCycler = new Cycler(owner, "BGFlatLight_Cycler", this, new Vector2(5f, 25f), 240f, "Mode: ", BGFlatLight.Mode.values.entries));
+				subNodes.Add(modeCycler = new Cycler(owner, "BGFlatLight_Mode_Cycler", this, new Vector2(5f, 45f), 240f, "Color mode: ", BGFlatLight.Mode.values.entries));
+				subNodes.Add(cloudCycler = new Cycler(owner, "BGFlatLight_Cloud_Cycler", this, new Vector2(5f, 25f), 240f, "Cloud mode: ", ["NO", "YES"]));
 				subNodes.Add(strengthSlider = new BGFlatLightSlider(SliderType.Strength, owner, "BGFlatLight_Slider_Strength", this, new Vector2(5f, 5f), "Strengtth:"));
 
 				modeCycler.currentAlternative = Math.Max(Data.mode.index, 0);
+				cloudCycler.currentAlternative = Data.cloudMode ? 1 : 0;
 
 				// These get added in Refresh
 				redSlider = null!;
@@ -62,17 +60,18 @@ namespace RegionKit.Modules.Objects
 			{
 				// Update data
 				Data.mode = new BGFlatLight.Mode(BGFlatLight.Mode.values.entries[Mathf.Clamp(modeCycler.currentAlternative, 0, BGFlatLight.Mode.values.Count)], false);
+				Data.cloudMode = cloudCycler.currentAlternative == 1;
 
 				// Update sliders
 				if (lastMode != BGFlatLight.Mode.CustomColor && Data.mode == BGFlatLight.Mode.CustomColor)
 				{
-					redSlider = new BGFlatLightSlider(SliderType.Red, owner, "BGFlatLight_Slider_R", this, new Vector2(5f, 85f), "Red:");
-					greenSlider = new BGFlatLightSlider(SliderType.Green, owner, "BGFlatLight_Slider_G", this, new Vector2(5f, 65f), "Green:");
-					blueSlider = new BGFlatLightSlider(SliderType.Blue, owner, "BGFlatLight_Slider_B", this, new Vector2(5f, 45f), "Blue:");
+					redSlider = new BGFlatLightSlider(SliderType.Red, owner, "BGFlatLight_Slider_R", this, new Vector2(5f, 105f), "Red:");
+					greenSlider = new BGFlatLightSlider(SliderType.Green, owner, "BGFlatLight_Slider_G", this, new Vector2(5f, 85f), "Green:");
+					blueSlider = new BGFlatLightSlider(SliderType.Blue, owner, "BGFlatLight_Slider_B", this, new Vector2(5f, 65f), "Blue:");
 					subNodes.Add(redSlider);
 					subNodes.Add(greenSlider);
 					subNodes.Add(blueSlider);
-					size = new Vector2(250f, 105f);
+					size = new Vector2(250f, 125f);
 				}
 				else if (lastMode == BGFlatLight.Mode.CustomColor && Data.mode != BGFlatLight.Mode.CustomColor)
 				{
@@ -85,7 +84,7 @@ namespace RegionKit.Modules.Objects
 					redSlider = null!;
 					greenSlider = null!;
 					blueSlider = null!;
-					size = new Vector2(250f, 45f);
+					size = new Vector2(250f, 65f);
 				}
 				lastMode = Data.mode;
 
@@ -95,6 +94,7 @@ namespace RegionKit.Modules.Objects
 
 			public void Signal(DevUISignalType type, DevUINode sender, string message)
 			{
+				Refresh();
 			}
 
 			private class BGFlatLightSlider : Slider

@@ -324,8 +324,8 @@ public static class _Module
 		}
 		else if (tp == _Enums.BGFlatLight)
 		{
-			bool newObject = CreateObjectIfNeeded();
-			rep = new BGFlatLightRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj, newObject);
+			CreateObjectIfNeeded();
+			rep = new BGFlatLightRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj);
 		}
 
 		// Create object or call orig
@@ -437,5 +437,6 @@ public static class _Module
 		Custom.rainWorld.Shaders["ColorEffects"] = FShader.CreateShader("ColorEffects", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/coloreffects")).LoadAsset<Shader>("Assets/ColorEffects.shader"));
 		Custom.rainWorld.Shaders["WaterFallDepth"] = FShader.CreateShader("WaterFallDepth", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/waterfalldepth")).LoadAsset<Shader>("Assets/Shaders/WaterFallDepth.shader"));
 		Custom.rainWorld.Shaders["BGFlatLight"] = FShader.CreateShader("BGFlatLight", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/bgflatlight")).LoadAsset<Shader>("Assets/Shaders/BGFlatLight.shader"));
+		Custom.rainWorld.Shaders["BGCloudLight"] = FShader.CreateShader("BGCloudLight", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/bgflatlight")).LoadAsset<Shader>("Assets/Shaders/BGCloudLight.shader"));
 	}
 }

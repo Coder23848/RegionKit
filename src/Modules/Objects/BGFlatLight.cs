@@ -8,10 +8,13 @@ namespace RegionKit.Modules.Objects
 		public readonly PlacedObject pObj;
 		public Data data => (pObj.data as Data)!;
 
+		private bool lastCloudMode;
+
 		public BGFlatLight(PlacedObject pObj)
 		{
 			this.pObj = pObj;
 			pos = pObj.pos;
+			lastCloudMode = data.cloudMode;
 		}
 
 		public override void Update(bool eu)
@@ -24,13 +27,18 @@ namespace RegionKit.Modules.Objects
 		{
 			sLeaser.sprites = [
 				new FSprite("Futile_White") {
-					shader = rCam.game.rainWorld.Shaders["BGFlatLight"]
+					shader = rCam.game.rainWorld.Shaders[data.cloudMode ? "BGCloudLight" : "BGFlatLight"]
 				}];
 			AddToContainer(sLeaser, rCam, null!);
 		}
 
 		public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
 		{
+			if (lastCloudMode != data.cloudMode)
+			{
+				sLeaser.sprites[0].shader = rCam.game.rainWorld.Shaders[data.cloudMode ? "BGCloudLight" : "BGFlatLight"];
+				lastCloudMode = data.cloudMode;
+			}
 			sLeaser.sprites[0].SetPosition(pos - camPos);
 			sLeaser.sprites[0].color = GetColor(rCam);
 			sLeaser.sprites[0].scale = data.handlePos.magnitude / 8f;
@@ -78,6 +86,7 @@ namespace RegionKit.Modules.Objects
 			public Mode mode = Mode.CustomColor;
 			public float r = 1f, g = 1f, b = 1f;
 			public float strength = 1f;
+			public bool cloudMode = false;
 
 			public Color CustomColor => new(r, g, b, strength);
 
@@ -88,31 +97,41 @@ namespace RegionKit.Modules.Objects
 			public override string ToString()
 			{
 				string text = string.Format(CultureInfo.InvariantCulture,
-					"{0}~{1}~{2}~{3}~{4}~{5}~{6}~{7}~{8}",
+					"{0}~{1}~{2}~{3}~{4}~{5}~{6}~{7}~{8}~{9}",
 					handlePos.x,
 					handlePos.y,
 					panelPos.x,
 					panelPos.y,
 					mode,
 					r, g, b,
-					strength);
+					strength,
+					cloudMode);
 				text = SaveState.SetCustomData(this, text);
 				return SaveUtils.AppendUnrecognizedStringAttrs(text, "~", unrecognizedAttributes);
 			}
 
 			public override void FromString(string s)
 			{
-				string[] array = Regex.Split(s, "~");
-				handlePos.x = float.Parse(array[0], NumberStyles.Any, CultureInfo.InvariantCulture);
-				handlePos.y = float.Parse(array[1], NumberStyles.Any, CultureInfo.InvariantCulture);
-				panelPos.x = float.Parse(array[2], NumberStyles.Any, CultureInfo.InvariantCulture);
-				panelPos.y = float.Parse(array[3], NumberStyles.Any, CultureInfo.InvariantCulture);
-				mode = new Mode(array[4], false);
-				r = float.Parse(array[5], NumberStyles.Any, CultureInfo.InvariantCulture);
-				g = float.Parse(array[6], NumberStyles.Any, CultureInfo.InvariantCulture);
-				b = float.Parse(array[7], NumberStyles.Any, CultureInfo.InvariantCulture);
-				strength = float.Parse(array[8], NumberStyles.Any, CultureInfo.InvariantCulture);
-				unrecognizedAttributes = SaveUtils.PopulateUnrecognizedStringAttrs(array, 9);
+				try
+				{
+					string[] array = Regex.Split(s, "~");
+					if (array.Length > 0) handlePos.x = float.Parse(array[0], NumberStyles.Any, CultureInfo.InvariantCulture);
+					if (array.Length > 1) handlePos.y = float.Parse(array[1], NumberStyles.Any, CultureInfo.InvariantCulture);
+					if (array.Length > 2) panelPos.x = float.Parse(array[2], NumberStyles.Any, CultureInfo.InvariantCulture);
+					if (array.Length > 3) panelPos.y = float.Parse(array[3], NumberStyles.Any, CultureInfo.InvariantCulture);
+					if (array.Length > 4) mode = new Mode(array[4], false);
+					if (array.Length > 5) r = float.Parse(array[5], NumberStyles.Any, CultureInfo.InvariantCulture);
+					if (array.Length > 6) g = float.Parse(array[6], NumberStyles.Any, CultureInfo.InvariantCulture);
+					if (array.Length > 7) b = float.Parse(array[7], NumberStyles.Any, CultureInfo.InvariantCulture);
+					if (array.Length > 8) strength = float.Parse(array[8], NumberStyles.Any, CultureInfo.InvariantCulture);
+					if (array.Length > 9) cloudMode = bool.Parse(array[9]);
+					unrecognizedAttributes = SaveUtils.PopulateUnrecognizedStringAttrs(array, 10);
+				}
+				catch (Exception ex)
+				{
+					LogWarning("Failed to parse BGFlatLight data!");
+					LogError(ex);
+				}
 			}
 		}
 
