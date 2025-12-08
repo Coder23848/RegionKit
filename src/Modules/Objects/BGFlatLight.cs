@@ -41,6 +41,7 @@ namespace RegionKit.Modules.Objects
 			}
 			sLeaser.sprites[0].SetPosition(pos - camPos);
 			sLeaser.sprites[0].color = GetColor(rCam);
+			sLeaser.sprites[0].alpha = data.CustomColor.a;
 			sLeaser.sprites[0].scale = data.handlePos.magnitude / 8f;
 		}
 

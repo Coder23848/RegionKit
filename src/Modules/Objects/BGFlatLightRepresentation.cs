@@ -14,6 +14,13 @@ namespace RegionKit.Modules.Objects
 			fSprites.Add(panelLine = new FSprite("pixel") { anchorY = 0f });
 			subNodes.Add(panel = new BGFlatLightPanel(owner, IDstring, this, Data.panelPos));
 			owner.placedObjectsContainer.AddChild(panelLine);
+
+
+			var light = owner.room.updateList.FirstOrDefault(x => x is BGFlatLight light && light.pObj.pos == pObj.pos);
+			if (light == null)
+			{
+				owner.room.AddObject(new BGFlatLight(pObj));
+			}
 		}
 
 		public override void Refresh()
@@ -42,7 +49,7 @@ namespace RegionKit.Modules.Objects
 			{
 				subNodes.Add(modeCycler = new Cycler(owner, "BGFlatLight_Mode_Cycler", this, new Vector2(5f, 45f), 240f, "Color mode: ", BGFlatLight.Mode.values.entries));
 				subNodes.Add(cloudCycler = new Cycler(owner, "BGFlatLight_Cloud_Cycler", this, new Vector2(5f, 25f), 240f, "Cloud mode: ", ["NO", "YES"]));
-				subNodes.Add(strengthSlider = new BGFlatLightSlider(SliderType.Strength, owner, "BGFlatLight_Slider_Strength", this, new Vector2(5f, 5f), "Strengtth:"));
+				subNodes.Add(strengthSlider = new BGFlatLightSlider(SliderType.Strength, owner, "BGFlatLight_Slider_Strength", this, new Vector2(5f, 5f), "Strength:"));
 
 				modeCycler.currentAlternative = Math.Max(Data.mode.index, 0);
 				cloudCycler.currentAlternative = Data.cloudMode ? 1 : 0;
