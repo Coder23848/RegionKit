@@ -1,6 +1,7 @@
 ﻿using DevInterface;
 using MonoMod.RuntimeDetour;
 using RegionKit.API;
+using RegionKit.Modules.Objects.AdvancedShaderController;
 
 namespace RegionKit.Modules.Objects;
 ///<inheritdoc/>
@@ -173,7 +174,8 @@ public static class _Module
 			|| type == _Enums.FanLight
 			|| type == _Enums.PCPlayerSensitiveLightSource
 			|| type == _Enums.WaterFallDepth
-			|| type == _Enums.BGFlatLight)
+			|| type == _Enums.BGFlatLight
+			|| type == _Enums.AdvancedShader)
 			res = new ObjectsPage.DevObjectCategories(DECORATIONS_POM_CATEGORY);
 		else if (type == _Enums.NoWallSlideZone
 			|| type == _Enums.ClimbablePole
@@ -256,6 +258,9 @@ public static class _Module
 				case nameof(_Enums.BGFlatLight):
 					self.AddObject(new BGFlatLight(pObj));
 					break;
+			case nameof(_Enums.AdvancedShader):
+				self.AddObject(new AdvancedShader(pObj));
+				break;
 			}
 			if (pObj.data is WormgrassRectData && !wormgrassDataFound)
 			{
@@ -326,6 +331,11 @@ public static class _Module
 		{
 			CreateObjectIfNeeded();
 			rep = new BGFlatLightRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj);
+		}
+		else if (tp == _Enums.AdvancedShader)
+		{
+			CreateObjectIfNeeded();
+			rep = new AdvancedShaderRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj);
 		}
 
 		// Create object or call orig
@@ -412,6 +422,10 @@ public static class _Module
 		else if (self.type == _Enums.BGFlatLight)
 		{
 			self.data = new BGFlatLight.Data(self);
+		}
+		else if (self.type == _Enums.AdvancedShader)
+		{
+			self.data = new AdvancedShader.Data(self);
 		}
 		orig(self);
 	}
