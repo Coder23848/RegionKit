@@ -26,7 +26,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 
 			size = new Vector2(250f, 5f + 60f * data.vertices.Length + 20f);
 
-			subNodes.Add(restrictUVsButton = new Cycler(owner, "AdvancedShader_UVPanel_Restrict", this, new Vector2(5f, size.y - 20f), 240f, "Restrict UVs: ", ["NO", "YES"]));
+			subNodes.Add(restrictUVsButton = new Cycler(owner, "AdvancedShader_UVPanel_Restrict", this, new Vector2(5f, size.y - 20f), 240f, "Clamp UVs: ", ["NO", "YES"]));
 			restrictUVsButton.currentAlternative = data.restrictUVs ? 1 : 0;
 
 			uvControls = new UnboundVectorControl[data.uvs.Length];
@@ -49,7 +49,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 				data.restrictUVs = restrictUVs;
 				for (int i = 0; i < uvControls.Length; i++)
 				{
-					uvControls[i].Restrict = data.restrictColors;
+					uvControls[i].Restrict = data.restrictUVs;
 				}
 			}
 

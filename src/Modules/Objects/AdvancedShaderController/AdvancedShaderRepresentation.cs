@@ -272,6 +272,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 					else
 					{
 						colorPanel = new AdvancedShaderColorPanel(owner, "AdvancedShader_Color", this, new Vector2(-300f, 0f));
+						colorPanel.pos -= new Vector2(0f, colorPanel.size.y - size.y);
 						subNodes.Add(colorPanel);
 					}
 				}
@@ -286,6 +287,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 					else
 					{
 						uvPanel = new AdvancedShaderUVPanel(owner, "AdvancedShader_UVs", this, new Vector2(300f, 0f));
+						uvPanel.pos -= new Vector2(0f, uvPanel.size.y - size.y);
 						subNodes.Add(uvPanel);
 					}
 				}

@@ -25,7 +25,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			size = new Vector2(250f, 5f + 100f * data.vertices.Length + 40f);
 
 			subNodes.Add(preview = new ColorPreview(owner, "AdvancedShader_ColorPanel_Preview", this, new Vector2(5f, size.y - 40f), new Vector2(70f, 36f)));
-			subNodes.Add(restrictColorsButton = new Cycler(owner, "AdvancedShader_ColorPanel_Restrict", this, new Vector2(80f, size.y - 20f), 160f, "Restrict colors: ", ["NO", "YES"]));
+			subNodes.Add(restrictColorsButton = new Cycler(owner, "AdvancedShader_ColorPanel_Restrict", this, new Vector2(80f, size.y - 20f), 160f, "Clamp colors: ", ["NO", "YES"]));
 			subNodes.Add(lockColorsButton = new Cycler(owner, "AdvancedShader_ColorPanel_Lock", this, new Vector2(80f, size.y - 40f), 160f, "Lock colors: ", ["NO", "YES"]));
 
 			restrictColorsButton.currentAlternative = data.restrictColors ? 1 : 0;
@@ -93,17 +93,17 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 
 			public ColorPreview(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos, Vector2 size) : base(owner, IDstring, parentNode, pos, size)
 			{
-				colorSprite = new CustomFSprite("Futile_White");
+				fSprites.Add(colorSprite = new CustomFSprite("Futile_White"));
 				owner.placedObjectsContainer.AddChild(colorSprite);
 
 				lines = new FSprite[4];
 				for (int i = 0; i < lines.Length; i++)
 				{
-					lines[i] = new FSprite("pixel")
+					fSprites.Add(lines[i] = new FSprite("pixel")
 					{
 						anchorX = 0,
 						anchorY = 0
-					};
+					});
 					owner.placedObjectsContainer.AddChild(lines[i]);
 				}
 			}

@@ -73,9 +73,9 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 		public UnboundRGBAControl(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos, float width, Color color, bool restrict, string title) : base(owner, IDstring, parentNode, pos)
 		{
 			subNodes.Add(label = new DevUILabel(owner, "Label", this, new Vector2(0f, 80f), width, title));
-			subNodes.Add(redPicker = new UnboundSlider(owner, "RedSlider", this, new Vector2(0f, 60f), width, color.r, restrict, "Red"));
-			subNodes.Add(greenPicker = new UnboundSlider(owner, "GreenSlider", this, new Vector2(0f, 40f), width, color.g, restrict, "Green"));
-			subNodes.Add(bluePicker = new UnboundSlider(owner, "BlueSlider", this, new Vector2(0f, 20f), width, color.b, restrict, "Blue"));
+			subNodes.Add(redPicker = new UnboundSlider(owner, "RedSlider", this, new Vector2(0f, 60f), width, color.r, restrict, "Red") { TrackColor = Color.red });
+			subNodes.Add(greenPicker = new UnboundSlider(owner, "GreenSlider", this, new Vector2(0f, 40f), width, color.g, restrict, "Green") { TrackColor = Color.green });
+			subNodes.Add(bluePicker = new UnboundSlider(owner, "BlueSlider", this, new Vector2(0f, 20f), width, color.b, restrict, "Blue") { TrackColor = Color.blue });
 			subNodes.Add(alphaPicker = new UnboundSlider(owner, "AlphaSlider", this, new Vector2(0f, 0f), width, color.a, restrict, "Alpha"));
 
 			_width = width;
