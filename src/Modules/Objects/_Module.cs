@@ -98,35 +98,42 @@ public static class _Module
 	internal static void Enable()
 	{
 		//TODO: make unapplies?
-		foreach (var hk in __objectHooks) if (!hk.IsApplied) hk.Apply();
-		On.PlacedObject.GenerateEmptyData += MakeEmptyData;
-		On.DevInterface.ObjectsPage.CreateObjRep += CreateObjectReps;
-		On.DevInterface.ObjectsPage.DevObjectGetCategoryFromPlacedType += ObjectsPageDevObjectGetCategoryFromPlacedType;
-		On.Room.NowViewed += Room_Viewed;
-		On.Room.NoLongerViewed += Room_NotViewed;
-		CustomEntranceSymbols.Apply();
-		ColoredLightBeam.Apply();
-		NoWallSlideZones.Apply();
-		RKAdditionalClimbables.Apply();
-		//todo: check if it's okay to have like this
-		_CommonHooks.PostRoomLoad += RoomPostLoad;
-		//On.RainWorld.LoadResources += LoadLittlePlanetResources;
-		ShortcutCannon.Apply();
-		SlugcatEyeSelector.Apply();
-		BigKarmaShrine.Apply();
-		CustomWallMycelia.Apply();
-		GuardProtectNode.Apply();
-		SlipperyZone.ApplyHooks();
-		WaterSpout.Apply();
-		FanLightHooks.Apply();
-		NoBatflyLurkZoneHooks.Apply();
-		NoDropwigPerchZoneHooks.Apply();
-		WaterFallDepthHooks.Apply();
-		EvilDangleFruit.Apply();
+		try
+		{
+			foreach (var hk in __objectHooks) if (!hk.IsApplied) hk.Apply();
+			On.PlacedObject.GenerateEmptyData += MakeEmptyData;
+			On.DevInterface.ObjectsPage.CreateObjRep += CreateObjectReps;
+			On.DevInterface.ObjectsPage.DevObjectGetCategoryFromPlacedType += ObjectsPageDevObjectGetCategoryFromPlacedType;
+			On.Room.NowViewed += Room_Viewed;
+			On.Room.NoLongerViewed += Room_NotViewed;
+			CustomEntranceSymbols.Apply();
+			ColoredLightBeam.Apply();
+			NoWallSlideZones.Apply();
+			RKAdditionalClimbables.Apply();
+			//todo: check if it's okay to have like this
+			_CommonHooks.PostRoomLoad += RoomPostLoad;
+			//On.RainWorld.LoadResources += LoadLittlePlanetResources;
+			ShortcutCannon.Apply();
+			SlugcatEyeSelector.Apply();
+			BigKarmaShrine.Apply();
+			CustomWallMycelia.Apply();
+			GuardProtectNode.Apply();
+			SlipperyZone.ApplyHooks();
+			WaterSpout.Apply();
+			FanLightHooks.Apply();
+			NoBatflyLurkZoneHooks.Apply();
+			NoDropwigPerchZoneHooks.Apply();
+			WaterFallDepthHooks.Apply();
+			EvilDangleFruit.Apply();
 
-		_CompatHooks.Enable();
+			_CompatHooks.Enable();
 
-		LoadShaders();
+			LoadShaders();
+		}
+		catch (Exception e)
+		{
+			LogError(e);
+		}
 
 		DeprecatedItems.RegisterDeprecatedObject("PlacedWaterfall");
 	}
@@ -173,7 +180,8 @@ public static class _Module
 			|| type == _Enums.FanLight
 			|| type == _Enums.PCPlayerSensitiveLightSource
 			|| type == _Enums.WaterFallDepth
-			|| type == _Enums.BGFlatLight)
+			|| type == _Enums.BGFlatLight
+			|| type == _Enums.BigWaterWheel)
 			res = new ObjectsPage.DevObjectCategories(DECORATIONS_POM_CATEGORY);
 		else if (type == _Enums.NoWallSlideZone
 			|| type == _Enums.ClimbablePole
@@ -205,57 +213,60 @@ public static class _Module
 			PlacedObject pObj = self.roomSettings.placedObjects[m];
 			switch (pObj.type.value)
 			{
-				case nameof(_Enums.LittlePlanet):
-					self.AddObject(new LittlePlanet(self, pObj));
-					break;
-				case nameof(_Enums.NoWallSlideZone):
-					self.AddObject(new NoWallSlideZone(self, pObj));
-					break;
-				case nameof(_Enums.ProjectedCircle):
-					self.AddObject(new ProjectedCircleObject(self, pObj));
-					break;
-				case nameof(_Enums.UpsideDownWaterFall):
-					self.AddObject(new UpsideDownWaterFallObject(self, pObj, 1f, 5f, 1f, 5f, 1f, "Water", true));
-					break;
-				case nameof(_Enums.ColoredLightBeam):
-					var coloredLightBeam = new ColoredLightBeam(pObj);
-					self.AddObject(coloredLightBeam);
-					self.SetLightBeamBlink(coloredLightBeam, m);
-					coloredLightBeam._baseColorMode = (pObj.data as ColoredLightBeam.ColoredLightBeamData)!.colorType is ColoredLightBeam.ColoredLightBeamData.ColorType.Environment;
-					coloredLightBeam._effectColor = (int)(pObj.data as ColoredLightBeam.ColoredLightBeamData)!.colorType - 1;
-					break;
-				case nameof(_Enums.FanLight):
-					self.AddObject(new FanLightObject(self, pObj, (pObj.data as FanLightData)!));
-					break;
-				case nameof(_Enums.ClimbablePole):
-					self.AddObject(new ClimbablePole(self, (ClimbJumpVineData)pObj.data));
-					break;
-				case nameof(_Enums.ClimbableWire):
-					MoreSlugcats.ClimbableVineRenderer? climbableVineRenderer = null;
-					var num13 = self.updateList.Count - 1;
-					while (num13 >= 0 && climbableVineRenderer == null)
-					{
-						if (self.updateList[num13] is MoreSlugcats.ClimbableVineRenderer r)
-							climbableVineRenderer = r;
-						num13--;
-					}
-					if (climbableVineRenderer == null)
-					{
-						climbableVineRenderer = new(self);
-						self.AddObject(climbableVineRenderer);
-					}
-					self.waitToEnterAfterFullyLoaded = Math.Max(self.waitToEnterAfterFullyLoaded, 80);
-					break;
-				case nameof(_Enums.PCPlayerSensitiveLightSource):
-					PlayerSensitiveLightSourceData data = (pObj.data as PlayerSensitiveLightSourceData)!;
-					self.AddObject(new PlayerSensitiveLightSource(pObj, pObj.pos, data.Rad, data.DetectRad, data.minStrength, data.maxStrength, data.fadeSpeed, data.colorType.index - 2));
-					break;
-				case nameof(_Enums.WaterFallDepth):
-					self.AddObject(new WaterFallDepth(self, pObj));
-					break;
-				case nameof(_Enums.BGFlatLight):
-					self.AddObject(new BGFlatLight(pObj));
-					break;
+			case nameof(_Enums.LittlePlanet):
+				self.AddObject(new LittlePlanet(self, pObj));
+				break;
+			case nameof(_Enums.NoWallSlideZone):
+				self.AddObject(new NoWallSlideZone(self, pObj));
+				break;
+			case nameof(_Enums.ProjectedCircle):
+				self.AddObject(new ProjectedCircleObject(self, pObj));
+				break;
+			case nameof(_Enums.UpsideDownWaterFall):
+				self.AddObject(new UpsideDownWaterFallObject(self, pObj, 1f, 5f, 1f, 5f, 1f, "Water", true));
+				break;
+			case nameof(_Enums.ColoredLightBeam):
+				var coloredLightBeam = new ColoredLightBeam(pObj);
+				self.AddObject(coloredLightBeam);
+				self.SetLightBeamBlink(coloredLightBeam, m);
+				coloredLightBeam._baseColorMode = (pObj.data as ColoredLightBeam.ColoredLightBeamData)!.colorType is ColoredLightBeam.ColoredLightBeamData.ColorType.Environment;
+				coloredLightBeam._effectColor = (int)(pObj.data as ColoredLightBeam.ColoredLightBeamData)!.colorType - 1;
+				break;
+			case nameof(_Enums.FanLight):
+				self.AddObject(new FanLightObject(self, pObj, (pObj.data as FanLightData)!));
+				break;
+			case nameof(_Enums.ClimbablePole):
+				self.AddObject(new ClimbablePole(self, (ClimbJumpVineData)pObj.data));
+				break;
+			case nameof(_Enums.ClimbableWire):
+				MoreSlugcats.ClimbableVineRenderer? climbableVineRenderer = null;
+				var num13 = self.updateList.Count - 1;
+				while (num13 >= 0 && climbableVineRenderer == null)
+				{
+					if (self.updateList[num13] is MoreSlugcats.ClimbableVineRenderer r)
+						climbableVineRenderer = r;
+					num13--;
+				}
+				if (climbableVineRenderer == null)
+				{
+					climbableVineRenderer = new(self);
+					self.AddObject(climbableVineRenderer);
+				}
+				self.waitToEnterAfterFullyLoaded = Math.Max(self.waitToEnterAfterFullyLoaded, 80);
+				break;
+			case nameof(_Enums.PCPlayerSensitiveLightSource):
+				PlayerSensitiveLightSourceData data = (pObj.data as PlayerSensitiveLightSourceData)!;
+				self.AddObject(new PlayerSensitiveLightSource(pObj, pObj.pos, data.Rad, data.DetectRad, data.minStrength, data.maxStrength, data.fadeSpeed, data.colorType.index - 2));
+				break;
+			case nameof(_Enums.WaterFallDepth):
+				self.AddObject(new WaterFallDepth(self, pObj));
+				break;
+			case nameof(_Enums.BGFlatLight):
+				self.AddObject(new BGFlatLight(pObj));
+				break;
+			case nameof(_Enums.BigWaterWheel):
+				self.AddObject(new BigWaterWheel(pObj, self));
+				break;
 			}
 			if (pObj.data is WormgrassRectData && !wormgrassDataFound)
 			{
@@ -326,6 +337,11 @@ public static class _Module
 		{
 			CreateObjectIfNeeded();
 			rep = new BGFlatLightRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj);
+		}
+		else if (tp == _Enums.BigWaterWheel)
+		{
+			CreateObjectIfNeeded();
+			rep = new BigWaterWheelRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj, tp.ToString());
 		}
 
 		// Create object or call orig
@@ -413,6 +429,10 @@ public static class _Module
 		{
 			self.data = new BGFlatLight.Data(self);
 		}
+		else if (self.type == _Enums.BigWaterWheel)
+		{
+			self.data = new BigWaterWheel.Data(self);
+		}
 		orig(self);
 	}
 
@@ -436,7 +456,8 @@ public static class _Module
 	{
 		Custom.rainWorld.Shaders["ColorEffects"] = FShader.CreateShader("ColorEffects", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/coloreffects")).LoadAsset<Shader>("Assets/ColorEffects.shader"));
 		Custom.rainWorld.Shaders["WaterFallDepth"] = FShader.CreateShader("WaterFallDepth", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/waterfalldepth")).LoadAsset<Shader>("Assets/Shaders/WaterFallDepth.shader"));
-		Custom.rainWorld.Shaders["BGFlatLight"] = FShader.CreateShader("BGFlatLight", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/bgflatlight")).LoadAsset<Shader>("Assets/Shaders/BGFlatLight.shader"));
-		Custom.rainWorld.Shaders["BGCloudLight"] = FShader.CreateShader("BGCloudLight", AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/bgflatlight")).LoadAsset<Shader>("Assets/Shaders/BGCloudLight.shader"));
+		var bgflatlightBundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assets/regionkit/bgflatlight"));
+		Custom.rainWorld.Shaders["BGFlatLight"] = FShader.CreateShader("BGFlatLight", bgflatlightBundle.LoadAsset<Shader>("Assets/Shaders/BGFlatLight.shader"));
+		Custom.rainWorld.Shaders["BGCloudLight"] = FShader.CreateShader("BGCloudLight", bgflatlightBundle.LoadAsset<Shader>("Assets/Shaders/BGCloudLight.shader"));
 	}
 }

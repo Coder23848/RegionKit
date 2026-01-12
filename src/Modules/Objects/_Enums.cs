@@ -73,6 +73,10 @@ public class _Enums
 	/// </summary>
 	public static PlacedObject.Type BGFlatLight = new(nameof(BGFlatLight), true);
 	/// <summary>
+	/// Big water wheel
+	/// </summary>
+	public static PlacedObject.Type BigWaterWheel = new(nameof(BigWaterWheel), true);
+	/// <summary>
 	/// Evil dangle fruit dialogue
 	/// </summary>
 	public static SLOracleBehaviorHasMark.MiscItemType EvilDangleFruitDialogue = new(nameof(EvilDangleFruitDialogue), true);
