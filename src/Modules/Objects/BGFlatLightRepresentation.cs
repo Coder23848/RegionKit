@@ -52,7 +52,9 @@ namespace RegionKit.Modules.Objects
 				subNodes.Add(strengthSlider = new BGFlatLightSlider(SliderType.Strength, owner, "BGFlatLight_Slider_Strength", this, new Vector2(5f, 5f), "Strength:"));
 
 				modeCycler.currentAlternative = Math.Max(Data.mode.index, 0);
-				cloudCycler.currentAlternative = Data.cloudMode ? 1 : 0;
+                modeCycler.Text = modeCycler.baseName + modeCycler.alternatives[modeCycler.currentAlternative];
+                cloudCycler.currentAlternative = Data.cloudMode ? 1 : 0;
+                cloudCycler.Text = cloudCycler.baseName + modeCycler.alternatives[cloudCycler.currentAlternative];
 
 				// These get added in Refresh
 				redSlider = null!;
