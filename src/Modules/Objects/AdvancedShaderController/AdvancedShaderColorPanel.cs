@@ -31,7 +31,9 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			subNodes.Add(resetButton = new Button(owner, "AdvancedShader_ColorPanel_Reset", this, new Vector2(80f, size.y - 60f), 160f, "Reset colors"));
 
 			restrictColorsButton.currentAlternative = data.restrictColors ? 1 : 0;
+			restrictColorsButton.Text = restrictColorsButton.baseName + restrictColorsButton.alternatives[restrictColorsButton.currentAlternative];
 			lockColorsButton.currentAlternative = data.lockColors ? 1 : 0;
+			lockColorsButton.Text = lockColorsButton.baseName + lockColorsButton.alternatives[lockColorsButton.currentAlternative];
 
 			colorControls = new UnboundRGBAControl[data.vertices.Length];
 			lastColors = new Color[data.vertices.Length];

@@ -80,6 +80,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			public bool restrictUVs = true;
 			public bool restrictColors = true;
 			public bool lockColors = true;
+			public bool lockUVs = true;
 
 			public string shader = "Basic";
 			public string spriteName = "Futile_White";
@@ -153,7 +154,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			public override string ToString()
 			{
 				string text = string.Format(CultureInfo.InvariantCulture,
-					"{0}~{1}~{2}~{3}~{4}~{5}~{6}~{7}~{8}~{9}~{10}",
+					"{0}~{1}~{2}~{3}~{4}~{5}~{6}~{7}~{8}~{9}~{10}~{11}",
 					panelPos.x, panelPos.y,
 					shader,
 					spriteName,
@@ -163,6 +164,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 					restrictUVs,
 					restrictColors,
 					lockColors,
+					lockUVs,
 					vertices.Length
 					);
 				for (int i = 0; i < vertices.Length; i++)
@@ -190,21 +192,22 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 				if (split.Length > 7) _ = bool.TryParse(split[7], out restrictUVs);
 				if (split.Length > 8) _ = bool.TryParse(split[8], out restrictColors);
 				if (split.Length > 9) _ = bool.TryParse(split[9], out lockColors);
-				if (split.Length > 10 && int.TryParse(split[10], out int numVertices) && numVertices >= 4)
+				if (split.Length > 10) _ = bool.TryParse(split[10], out lockUVs);
+				if (split.Length > 11 && int.TryParse(split[11], out int numVertices) && numVertices >= 4)
 				{
 					vertices = new Vector2[numVertices];
 					uvs = new Vector2[numVertices];
 					colors = new Color[numVertices];
-					for (int i = 0; i < numVertices && split.Length >= 11 + 8 * (i + 1); i++)
+					for (int i = 0; i < numVertices && split.Length >= 12 + 8 * (i + 1); i++)
 					{
-						_ = float.TryParse(split[11 + 8 * i + 0], out vertices[i].x);
-						_ = float.TryParse(split[11 + 8 * i + 1], out vertices[i].y);
-						_ = float.TryParse(split[11 + 8 * i + 2], out uvs[i].x);
-						_ = float.TryParse(split[11 + 8 * i + 3], out uvs[i].y);
-						_ = float.TryParse(split[11 + 8 * i + 4], out colors[i].r);
-						_ = float.TryParse(split[11 + 8 * i + 5], out colors[i].g);
-						_ = float.TryParse(split[11 + 8 * i + 6], out colors[i].b);
-						_ = float.TryParse(split[11 + 8 * i + 7], out colors[i].a);
+						_ = float.TryParse(split[12 + 8 * i + 0], out vertices[i].x);
+						_ = float.TryParse(split[12 + 8 * i + 1], out vertices[i].y);
+						_ = float.TryParse(split[12 + 8 * i + 2], out uvs[i].x);
+						_ = float.TryParse(split[12 + 8 * i + 3], out uvs[i].y);
+						_ = float.TryParse(split[12 + 8 * i + 4], out colors[i].r);
+						_ = float.TryParse(split[12 + 8 * i + 5], out colors[i].g);
+						_ = float.TryParse(split[12 + 8 * i + 6], out colors[i].b);
+						_ = float.TryParse(split[12 + 8 * i + 7], out colors[i].a);
 					}
 				}
 			}

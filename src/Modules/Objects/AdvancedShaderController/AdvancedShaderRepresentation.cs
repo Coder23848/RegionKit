@@ -200,7 +200,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			{
 				subNodes.Add(new DevUILabel(owner, "AdvancedShader_Label_Shader", this, new Vector2(5f, 85f), 50f, "Shader: "));
 				subNodes.Add(shaderSelectButton = new Button(owner, "AdvancedShader_Button_Shader", this, new Vector2(60f, 85f), 180f, data.shader));
-				
+
 				subNodes.Add(new DevUILabel(owner, "AdvancedShader_Label_Sprite", this, new Vector2(5f, 65f), 50f, "Sprite: "));
 				subNodes.Add(spriteSelectButton = new Button(owner, "AdvancedShader_Button_Sprite", this, new Vector2(60f, 65f), 180f, data.spriteName));
 
@@ -229,18 +229,18 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 				lockRect.overrideTextColor = null;
 				switch (data.shapeLock)
 				{
-				case ShapeLock.None:
-					lockNone.overrideTextColor = new Color(0f, 0f, 1f);
-					break;
-				case ShapeLock.Shape:
-					lockShape.overrideTextColor = new Color(0f, 0f, 1f);
-					break;
-				case ShapeLock.Square:
-					lockSquare.overrideTextColor = new Color(0f, 0f, 1f);
-					break;
-				case ShapeLock.Rect:
-					lockRect.overrideTextColor = new Color(0f, 0f, 1f);
-					break;
+					case ShapeLock.None:
+						lockNone.overrideTextColor = new Color(0f, 0f, 1f);
+						break;
+					case ShapeLock.Shape:
+						lockShape.overrideTextColor = new Color(0f, 0f, 1f);
+						break;
+					case ShapeLock.Square:
+						lockSquare.overrideTextColor = new Color(0f, 0f, 1f);
+						break;
+					case ShapeLock.Rect:
+						lockRect.overrideTextColor = new Color(0f, 0f, 1f);
+						break;
 				}
 			}
 
@@ -313,7 +313,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 						rep.shaderInstance.CompletelyRefreshSprite();
 					}
 				}
-				
+
 				else if (sender == lockNone)
 				{
 					data.shapeLock = ShapeLock.None;
@@ -334,7 +334,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 					data.shapeLock = ShapeLock.Rect;
 					Refresh();
 				}
-				
+
 				else if (sender == containerLeft)
 				{
 					data.container = (ContainerCodes)Math.Max((int)data.container - 1, 0);
