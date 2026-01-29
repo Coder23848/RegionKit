@@ -1,6 +1,7 @@
 ﻿
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 
 namespace RegionKit.Modules.ShelterBehaviors;
 ///<inheritdoc/>
@@ -11,14 +12,18 @@ public static class _Module
 
 	internal static void Setup()
 	{
-		RegisterManagedObject<HoldToTriggerTutorialObject, HoldToTriggerTutorialData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
-		RegisterFullyManagedObjectType(new ManagedField[]{
-				new IntVector2Field("dir", new RWCustom.IntVector2(0,1), IntVector2Field.IntVectorReprType.fourdir), }
-		, null!, nameof(_Enums.ShelterBhvrPlacedDoor), SHELTERS_POM_CATEGORY);
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrTriggerZone), SHELTERS_POM_CATEGORY, typeof(PlacedObject.GridRectObjectData), typeof(DevInterface.GridRectObjectRepresentation));
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrNoTriggerZone), SHELTERS_POM_CATEGORY, typeof(PlacedObject.GridRectObjectData), typeof(DevInterface.GridRectObjectRepresentation));
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrSpawnPosition), SHELTERS_POM_CATEGORY, null!, null!); // No data required :)
+		RegisterFullyManagedObjectType([new IntVector2Field("dir", new IntVector2(0,1), IntVector2Field.IntVectorReprType.fourdir)], null!, nameof(_Enums.ShelterBhvrPlacedDoor), SHELTERS_POM_CATEGORY);
+		RegisterManagedObject<HoldToTriggerTutorialObject, HoldToTriggerTutorialData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
+		RegisterFullyManagedObjectType([
+			new IntegerField("min", -1, 30, 3, displayName:"Consum. Cooldown Min"),
+			new IntegerField("max", 0, 30, 6, displayName:"Consum. Cooldown Max"),
+			], null!, nameof(_Enums.ShelterBhvrConsumableShelter), SHELTERS_POM_CATEGORY);
 	}
+
+	private static readonly List<IDetour> _manualHooks = [];
 
 	internal static void Enable()
 	{
@@ -31,6 +36,7 @@ public static class _Module
 			On.ShelterDoor.Update += ShelterDoor_Update;
 			On.Room.AddObject += Room_AddObject;
 			IL.Player.Update += Player_Update;
+			_manualHooks.Add(new Hook(typeof(ShelterDoor).GetProperty(nameof(ShelterDoor.Broken)).GetGetMethod(), ShelterDoor_get_Broken));
 		}
 		catch (Exception ex)
 		{
@@ -49,6 +55,12 @@ public static class _Module
 			On.ShelterDoor.Update -= ShelterDoor_Update;
 			On.Room.AddObject -= Room_AddObject;
 			IL.Player.Update -= Player_Update;
+			foreach (IDetour hook in _manualHooks)
+			{
+				hook.Undo();
+				hook.Dispose();
+			}
+			_manualHooks.Clear();
 		}
 		catch (Exception ex)
 		{
@@ -74,6 +86,10 @@ public static class _Module
 			return;
 		}
 		orig(self);
+		if (self.IsClosing)
+		{
+			manager?.ConsumeShelter();
+		}
 	}
 
 	private static void ShelterDoor_ctor(On.ShelterDoor.orig_ctor orig, ShelterDoor self, Room room)
@@ -137,5 +153,15 @@ public static class _Module
 			return true;
 		});
 		c.Emit(OpCodes.Brfalse, brIfFalse);
+	}
+
+	private static bool ShelterDoor_get_Broken(Func<ShelterDoor, bool> orig, ShelterDoor self)
+	{
+		bool consumed = false;
+		if (ShelterDataManager.TryGetShelterDataManager(self.room, out var manager) && manager != null)
+		{
+			consumed = manager.ShelterConsumed;
+		}
+		return orig(self) || consumed;
 	}
 }

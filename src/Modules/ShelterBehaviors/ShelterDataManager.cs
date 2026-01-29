@@ -8,6 +8,11 @@ namespace RegionKit.Modules.ShelterBehaviors
 		private static readonly ConditionalWeakTable<Room, ShelterDataManager> dataCWT = new();
 		public static bool TryGetShelterDataManager(Room room, out ShelterDataManager? data)
 		{
+			// Extra safety
+			data = null;
+			if (room is null) return false;
+
+			// Try to get the data
 			if (dataCWT.TryGetValue(room, out var shelterDataManager))
 			{
 				data = shelterDataManager;
@@ -19,11 +24,7 @@ namespace RegionKit.Modules.ShelterBehaviors
                 dataCWT.Add(room, data);
                 return true;
             }
-            else
-			{
-				data = null;
-				return false;
-			}
+			return false;
 		}
 
 		private readonly Room room;
@@ -35,11 +36,15 @@ namespace RegionKit.Modules.ShelterBehaviors
 		public readonly (IntVector2 pos, IntVector2 dir)? firstShelterDoorSpot = null;
 		public readonly List<CosmeticShelterDoor> cosmeticShelterDoors = [];
 
+		public readonly (int minCycles, int maxCycles)? consumableShelterData = null;
+		public readonly int consumableShelterIndex = -1;
+
 		private ShelterDataManager(Room room)
 		{
 			this.room = room;
-			foreach (PlacedObject po in room.roomSettings.placedObjects)
+			for (int i = 0; i < room.roomSettings.placedObjects.Count; i++)
 			{
+				PlacedObject po = room.roomSettings.placedObjects[i];
 				if (po.type == _Enums.ShelterBhvrSpawnPosition)
 				{
 					spawnPoints.Add(po.pos);
@@ -66,6 +71,13 @@ namespace RegionKit.Modules.ShelterBehaviors
                         cosmeticShelterDoors.Add(door);
 						room.AddObject(door);
 					}
+				}
+				else if (po.type == _Enums.ShelterBhvrConsumableShelter && consumableShelterData is null)
+				{
+					int min = (po.data as ManagedData)!.GetValue<int>("min");
+					int max = (po.data as ManagedData)!.GetValue<int>("max");
+					consumableShelterData = (min, max);
+					consumableShelterIndex = i;
 				}
 			}
 		}
@@ -116,6 +128,27 @@ namespace RegionKit.Modules.ShelterBehaviors
 				inZone &= !noTriggerRect.Contains(tile);
 			}
 			return inZone;
+		}
+
+		public void ConsumeShelter()
+		{
+			if (consumableShelterIndex > -1 && room.game.IsStorySession && consumableShelterData != null)
+			{
+				var cyclesToWait = consumableShelterData.Value.minCycles > 0 ? Random.Range(consumableShelterData.Value.minCycles, consumableShelterData.Value.maxCycles + 1) : -1;
+                room.game.GetStorySession.saveState.ReportConsumedItem(room.world, false, room.abstractRoom.index, consumableShelterIndex, cyclesToWait);
+			}
+		}
+
+		public bool ShelterConsumed
+		{
+			get
+			{
+				if (consumableShelterIndex > -1 && room.game.IsStorySession)
+				{
+					return room.game.GetStorySession.saveState.ItemConsumed(room.world, false, room.abstractRoom.index, consumableShelterIndex);
+				}
+				return false;
+			}
 		}
 	}
 }
