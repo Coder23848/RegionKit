@@ -59,8 +59,8 @@ public static class _Module
 
 		RegisterManagedObject<ShortcutCannon, shortcutCannonData, ShortcutCannonRepresentation>("ShortcutCannon", GAMEPLAY_POM_CATEGORY);
 		RegisterManagedObject<CameraNoise, CameraNoise.CameraNoiseData, ManagedRepresentation>("CameraNoise", DECORATIONS_POM_CATEGORY);
-        RegisterManagedObject<SlugcatEyeSelector, SlugcatEyeSelectorData, ManagedRepresentation>("SlugcatEyeSelector", DECORATIONS_POM_CATEGORY);
-        RegisterFullyManagedObjectType(
+		RegisterManagedObject<SlugcatEyeSelector, SlugcatEyeSelectorData, ManagedRepresentation>("SlugcatEyeSelector", DECORATIONS_POM_CATEGORY);
+		RegisterFullyManagedObjectType(
 			[
 				new IntegerField("reqkarma", 0, 9, 0, displayName:"Req Karma"),
 				new IntegerField("reqkarmacap", 0, 9, 9, displayName:"Req Karma Cap"),
@@ -89,10 +89,10 @@ public static class _Module
 
 		RegisterFullyManagedObjectType(
 		[
-			new IntVector2Field("0zone", new(1, 1), IntVector2Field.IntVectorReprType.rect), 
-			new FloatField("1traction", 0f, 1f, 1f, displayName:"Traction", increment: 0.02f), 
-			new BooleanField("2slope", false, displayName:"slippery slopes"), 
-			new BooleanField("3tunnel", false, displayName:"no tunnel crawl") 
+			new IntVector2Field("0zone", new(1, 1), IntVector2Field.IntVectorReprType.rect),
+			new FloatField("1traction", 0f, 1f, 1f, displayName:"Traction", increment: 0.02f),
+			new BooleanField("2slope", false, displayName:"slippery slopes"),
+			new BooleanField("3tunnel", false, displayName:"no tunnel crawl")
 		], typeof(SlipperyZone), "SlipperyZone", GAMEPLAY_POM_CATEGORY);
 	}
 
@@ -215,63 +215,63 @@ public static class _Module
 			PlacedObject pObj = self.roomSettings.placedObjects[m];
 			switch (pObj.type.value)
 			{
-			case nameof(_Enums.LittlePlanet):
-				self.AddObject(new LittlePlanet(self, pObj));
-				break;
-			case nameof(_Enums.NoWallSlideZone):
-				self.AddObject(new NoWallSlideZone(self, pObj));
-				break;
-			case nameof(_Enums.ProjectedCircle):
-				self.AddObject(new ProjectedCircleObject(self, pObj));
-				break;
-			case nameof(_Enums.UpsideDownWaterFall):
-				self.AddObject(new UpsideDownWaterFallObject(self, pObj, 1f, 5f, 1f, 5f, 1f, "Water", true));
-				break;
-			case nameof(_Enums.ColoredLightBeam):
-				var coloredLightBeam = new ColoredLightBeam(pObj);
-				self.AddObject(coloredLightBeam);
-				self.SetLightBeamBlink(coloredLightBeam, m);
-				coloredLightBeam._baseColorMode = (pObj.data as ColoredLightBeam.ColoredLightBeamData)!.colorType is ColoredLightBeam.ColoredLightBeamData.ColorType.Environment;
-				coloredLightBeam._effectColor = (int)(pObj.data as ColoredLightBeam.ColoredLightBeamData)!.colorType - 1;
-				break;
-			case nameof(_Enums.FanLight):
-				self.AddObject(new FanLightObject(self, pObj, (pObj.data as FanLightData)!));
-				break;
-			case nameof(_Enums.ClimbablePole):
-				self.AddObject(new ClimbablePole(self, (ClimbJumpVineData)pObj.data));
-				break;
-			case nameof(_Enums.ClimbableWire):
-				MoreSlugcats.ClimbableVineRenderer? climbableVineRenderer = null;
-				var num13 = self.updateList.Count - 1;
-				while (num13 >= 0 && climbableVineRenderer == null)
-				{
-					if (self.updateList[num13] is MoreSlugcats.ClimbableVineRenderer r)
-						climbableVineRenderer = r;
-					num13--;
-				}
-				if (climbableVineRenderer == null)
-				{
-					climbableVineRenderer = new(self);
-					self.AddObject(climbableVineRenderer);
-				}
-				self.waitToEnterAfterFullyLoaded = Math.Max(self.waitToEnterAfterFullyLoaded, 80);
-				break;
-			case nameof(_Enums.PCPlayerSensitiveLightSource):
-				PlayerSensitiveLightSourceData data = (pObj.data as PlayerSensitiveLightSourceData)!;
-				self.AddObject(new PlayerSensitiveLightSource(pObj, pObj.pos, data.Rad, data.DetectRad, data.minStrength, data.maxStrength, data.fadeSpeed, data.colorType.index - 2));
-				break;
-			case nameof(_Enums.WaterFallDepth):
-				self.AddObject(new WaterFallDepth(self, pObj));
-				break;
-			case nameof(_Enums.BGFlatLight):
-				self.AddObject(new BGFlatLight(pObj));
-				break;
-			case nameof(_Enums.AdvancedShader):
-				self.AddObject(new AdvancedShader(pObj));
-				break;
-			case nameof(_Enums.BigWaterWheel):
-				self.AddObject(new BigWaterWheel(pObj, self));
-				break;
+				case nameof(_Enums.LittlePlanet):
+					self.AddObject(new LittlePlanet(self, pObj));
+					break;
+				case nameof(_Enums.NoWallSlideZone):
+					self.AddObject(new NoWallSlideZone(self, pObj));
+					break;
+				case nameof(_Enums.ProjectedCircle):
+					self.AddObject(new ProjectedCircleObject(self, pObj));
+					break;
+				case nameof(_Enums.UpsideDownWaterFall):
+					self.AddObject(new UpsideDownWaterFallObject(self, pObj, 1f, 5f, 1f, 5f, 1f, "Water", true));
+					break;
+				case nameof(_Enums.ColoredLightBeam):
+					var coloredLightBeam = new ColoredLightBeam(pObj);
+					self.AddObject(coloredLightBeam);
+					self.SetLightBeamBlink(coloredLightBeam, m);
+					coloredLightBeam._baseColorMode = (pObj.data as ColoredLightBeam.ColoredLightBeamData)!.colorType is ColoredLightBeam.ColoredLightBeamData.ColorType.Environment;
+					coloredLightBeam._effectColor = (int)(pObj.data as ColoredLightBeam.ColoredLightBeamData)!.colorType - 1;
+					break;
+				case nameof(_Enums.FanLight):
+					self.AddObject(new FanLightObject(self, pObj, (pObj.data as FanLightData)!));
+					break;
+				case nameof(_Enums.ClimbablePole):
+					self.AddObject(new ClimbablePole(self, (ClimbJumpVineData)pObj.data));
+					break;
+				case nameof(_Enums.ClimbableWire):
+					MoreSlugcats.ClimbableVineRenderer? climbableVineRenderer = null;
+					var num13 = self.updateList.Count - 1;
+					while (num13 >= 0 && climbableVineRenderer == null)
+					{
+						if (self.updateList[num13] is MoreSlugcats.ClimbableVineRenderer r)
+							climbableVineRenderer = r;
+						num13--;
+					}
+					if (climbableVineRenderer == null)
+					{
+						climbableVineRenderer = new(self);
+						self.AddObject(climbableVineRenderer);
+					}
+					self.waitToEnterAfterFullyLoaded = Math.Max(self.waitToEnterAfterFullyLoaded, 80);
+					break;
+				case nameof(_Enums.PCPlayerSensitiveLightSource):
+					PlayerSensitiveLightSourceData data = (pObj.data as PlayerSensitiveLightSourceData)!;
+					self.AddObject(new PlayerSensitiveLightSource(pObj, pObj.pos, data.Rad, data.DetectRad, data.minStrength, data.maxStrength, data.fadeSpeed, data.colorType.index - 2));
+					break;
+				case nameof(_Enums.WaterFallDepth):
+					self.AddObject(new WaterFallDepth(self, pObj));
+					break;
+				case nameof(_Enums.BGFlatLight):
+					self.AddObject(new BGFlatLight(pObj));
+					break;
+				case nameof(_Enums.AdvancedShader):
+					self.AddObject(new AdvancedShader(pObj));
+					break;
+				case nameof(_Enums.BigWaterWheel):
+					self.AddObject(new BigWaterWheel(pObj, self));
+					break;
 			}
 			if (pObj.data is WormgrassRectData && !wormgrassDataFound)
 			{

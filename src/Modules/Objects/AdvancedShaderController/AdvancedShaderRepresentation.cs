@@ -66,10 +66,93 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 
 		public override void Refresh()
 		{
+			// Shape keeping
+			for (int i = 0; i < 4; i++)
+			{
+				// 1 -- 3
+				// |    |
+				// |    |
+				// 0 -- 2
+
+				if (quadHandles[i].pos != lastHandlesPos[i])
+				{
+					Vector2 newPos = quadHandles[i].pos;
+					if (!Input.GetKey(KeyCode.LeftShift))
+					{
+						// Shift NOT pressed, normal behavior
+						switch (data.shapeLock)
+						{
+							case ShapeLock.Square:
+							{
+								Vector2 rotateAround = (i == 0) ? lastHandlesPos[3] : lastHandlesPos[0];
+								Vector2 dir = rotateAround - newPos;
+								if (i == 0 || i == 3)
+								{
+									Vector2 perp = Custom.PerpendicularVector(dir) * (i == 0 ? -1 : 1);
+									quadHandles[1].pos = newPos + dir / 2 - perp * dir.magnitude / 2;
+									quadHandles[2].pos = newPos + dir / 2 + perp * dir.magnitude / 2;
+								}
+								else
+								{
+									Vector2 perp = Custom.PerpendicularVector(dir) * (i == 2 ? -1 : 1);
+									quadHandles[3 - i].pos = quadHandles[0].pos + perp * dir.magnitude;
+									quadHandles[3].pos = newPos + perp * dir.magnitude;
+								}
+								break;
+							}
+							case ShapeLock.Rect:
+							{
+								float left = (i == 0 || i == 1) ? newPos.x : quadHandles[0].pos.x;
+								float bottom = (i == 0 || i == 2) ? newPos.y : quadHandles[0].pos.y;
+								float right = (i == 2 || i == 3) ? newPos.x : quadHandles[3].pos.x;
+								float top = (i == 1 || i == 3) ? newPos.y : quadHandles[3].pos.y;
+								quadHandles[0].pos = new Vector2(left, bottom);
+								quadHandles[1].pos = new Vector2(left, top);
+								quadHandles[2].pos = new Vector2(right, bottom);
+								quadHandles[3].pos = new Vector2(right, top);
+								break;
+							}
+							case ShapeLock.Shape:
+							{
+								int rotateAroundIndex = (i == 0) ? 3 : 0;
+								Vector2 rotateAround = lastHandlesPos[rotateAroundIndex];
+
+								float angleDiff = Custom.VecToDeg(rotateAround - newPos) - Custom.VecToDeg(rotateAround - lastHandlesPos[i]);
+								float scaleDiff = (rotateAround - newPos).magnitude / (rotateAround - lastHandlesPos[i]).magnitude;
+								for (int j = 0; j < 4; j++)
+								{
+									if (j != i && j != rotateAroundIndex)
+									{
+										Vector2 diff = quadHandles[j].pos - rotateAround;
+										quadHandles[j].pos = rotateAround + Custom.DegToVec(Custom.VecToDeg(diff) + angleDiff) * diff.magnitude * scaleDiff;
+									}
+								}
+								break;
+							}
+						}
+					}
+					else
+					{
+						// Shift pressed, move all other vertices
+						Vector2 change = newPos - lastHandlesPos[i];
+						for (int j = 0; j < quadHandles.Length; j++)
+						{
+							if (j != i)
+							{
+								quadHandles[j].pos += change;
+							}
+						}
+					}
+
+					// Break out, since now any and all positions will be different, so no point in checking the rest
+					break;
+				}
+			}
+
+			// Refresh to update the handles (and every other subnode really)
 			base.Refresh();
 
-			// TODO: shape keeping
-
+			// Update data
 			for (int i = 0; i < data.vertices.Length; i++)
 			{
 				data.vertices[i] = quadHandles[i].pos;
@@ -77,6 +160,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			}
 			data.panelPos = panel.pos;
 
+			// Update connector sprites
 			quadConnector.SetPosition(absPos + new Vector2(0.01f, 0.01f));
 			quadConnector.rotation = Custom.AimFromOneVectorToAnother(absPos, quadHandles[0].absPos);
 			quadConnector.scaleY = (absPos - quadHandles[0].absPos).magnitude;
@@ -114,10 +198,11 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 
 			public AdvancedShaderPanel(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos) : base(owner, IDstring, parentNode, pos, new Vector2(250f, 105f), "Advanced Shader")
 			{
-				subNodes.Add(shaderSelectButton = new Button(owner, "AdvancedShader_Button_Shader", this, new Vector2(5f, 85f), 240f, $"Shader: {data.shader}"));
+				subNodes.Add(new DevUILabel(owner, "AdvancedShader_Label_Shader", this, new Vector2(5f, 85f), 50f, "Shader: "));
+				subNodes.Add(shaderSelectButton = new Button(owner, "AdvancedShader_Button_Shader", this, new Vector2(60f, 85f), 180f, data.shader));
 				
-				subNodes.Add(new DevUILabel(owner, "AdvancedShader_Label_Sprite", this, new Vector2(5f, 65f), 70f, "Sprite: "));
-				subNodes.Add(spriteSelectButton = new Button(owner, "AdvancedShader_Button_Sprite", this, new Vector2(80f, 65f), 160f, data.spriteName));
+				subNodes.Add(new DevUILabel(owner, "AdvancedShader_Label_Sprite", this, new Vector2(5f, 65f), 50f, "Sprite: "));
+				subNodes.Add(spriteSelectButton = new Button(owner, "AdvancedShader_Button_Sprite", this, new Vector2(60f, 65f), 180f, data.spriteName));
 
 				subNodes.Add(new DevUILabel(owner, "AdvancedShader_Label_Shape", this, new Vector2(5f, 45f), 44f, "Shape: "));
 				subNodes.Add(lockNone = new Button(owner, "AdvancedShader_Button_LockNone", this, new Vector2(54f, 45f), 44f, "None"));
@@ -210,7 +295,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 						if (selectPanel == shaderSelectPanel)
 						{
 							data.shader = sender.IDstring;
-							shaderSelectButton.Text = $"Shader: {data.shader}";
+							shaderSelectButton.Text = data.shader;
 							subNodes.Remove(shaderSelectPanel);
 							shaderSelectPanel.ClearSprites();
 							shaderSelectPanel = null;
@@ -218,7 +303,9 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 						else if (selectPanel == spriteSelectPanel)
 						{
 							data.spriteName = sender.IDstring;
-							spriteSelectButton.Text = $"Sprite: {data.spriteName}";
+							data.ResetUVs();
+							uvPanel?.RefreshUVs();
+							spriteSelectButton.Text = data.spriteName;
 							subNodes.Remove(spriteSelectPanel);
 							spriteSelectPanel.ClearSprites();
 							spriteSelectPanel = null;

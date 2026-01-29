@@ -28,7 +28,7 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			{
 				tris.Add(new TriangleMesh.Triangle(i, i + 1, i + 2));
 			}
-			sLeaser.sprites[0] = new TriangleMesh(LoadAndGetSpriteName(), [.. tris], true, false)
+			sLeaser.sprites[0] = new TriangleMesh(data.LoadAndGetSpriteName(), [.. tris], true, false)
 			{
 				shader = rCam.game.rainWorld.Shaders.TryGetValue(data.shader, out FShader shader) ? shader : FShader.Basic
 			};
@@ -69,42 +69,6 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			_needsRefresh = true;
 		}
 
-		private string LoadAndGetSpriteName()
-		{
-			// Do we need to load as file?
-			if (data.useFile)
-			{
-				// Get file to load
-				string filePath = string.Join("/", data.folderPath);
-				string fullFilePath = AssetManager.ResolveFilePath(filePath);
-				if (!File.Exists(fullFilePath))
-				{
-					// Doesn't exist, so load something that we do know exists
-					data.folderPath = ["illustrations", "icon0.png"];
-					filePath = "illustrations/icon0.png";
-					fullFilePath = AssetManager.ResolveFilePath(filePath);
-				}
-
-				// Make sure it is loaded
-				if (!Futile.atlasManager.DoesContainAtlas(filePath))
-				{
-					Texture2D tex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-					AssetManager.SafeWWWLoadTexture(ref tex, "file:///" + fullFilePath, true, true);
-					Futile.atlasManager.LoadAtlasFromTexture(filePath, tex, false);
-				}
-
-				// Return
-				return filePath;
-			}
-
-			// Return sprite, or Futile_White if we can't for some reason
-			if (!Futile.atlasManager.DoesContainElementWithName(data.spriteName))
-			{
-				return "Futile_White";
-			}
-			return data.spriteName;
-		}
-
 		public class Data : PlacedObject.Data
 		{
 			public Vector2[] vertices;
@@ -130,6 +94,59 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			{
 				vertices = [new Vector2(100f, 0f), new Vector2(100f, 100f), new Vector2(200f, 0f), new Vector2(200f, 100f)];
 				uvs = [new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(1f, 0f), new Vector2(1f, 1f)];
+				colors = [Color.white, Color.white, Color.white, Color.white];
+			}
+
+			public string LoadAndGetSpriteName()
+			{
+				// Do we need to load as file?
+				if (useFile)
+				{
+					// Get file to load
+					string filePath = string.Join("/", folderPath);
+					string fullFilePath = AssetManager.ResolveFilePath(filePath);
+					if (!File.Exists(fullFilePath))
+					{
+						// Doesn't exist, so load something that we do know exists
+						folderPath = ["illustrations", "icon0.png"];
+						filePath = "illustrations/icon0.png";
+						fullFilePath = AssetManager.ResolveFilePath(filePath);
+					}
+
+					// Make sure it is loaded
+					if (!Futile.atlasManager.DoesContainAtlas(filePath))
+					{
+						Texture2D tex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+						AssetManager.SafeWWWLoadTexture(ref tex, "file:///" + fullFilePath, true, true);
+						Futile.atlasManager.LoadAtlasFromTexture(filePath, tex, false);
+					}
+
+					// Return
+					return filePath;
+				}
+
+				// Return sprite, or Futile_White if we can't for some reason
+				if (!Futile.atlasManager.DoesContainElementWithName(spriteName))
+				{
+					return "Futile_White";
+				}
+				return spriteName;
+			}
+
+			public void ResetUVs()
+			{
+				if (Futile.atlasManager.TryGetElementWithName(LoadAndGetSpriteName(), out FAtlasElement? el) && el is not null)
+				{
+					uvs = [el.uvBottomLeft, el.uvTopLeft, el.uvBottomRight, el.uvTopRight];
+				}
+				else
+				{
+					uvs = [new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(1f, 0f), new Vector2(1f, 1f)];
+				}
+			}
+
+			public void ResetColors()
+			{
 				colors = [Color.white, Color.white, Color.white, Color.white];
 			}
 

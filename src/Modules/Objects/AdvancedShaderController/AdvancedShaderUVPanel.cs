@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DevInterface;
+﻿using DevInterface;
 
 namespace RegionKit.Modules.Objects.AdvancedShaderController
 {
-	public class AdvancedShaderUVPanel : Panel
+	public class AdvancedShaderUVPanel : Panel, IDevUISignals
 	{
 		public AdvancedShaderRepresentation rep => (parentNode.parentNode as AdvancedShaderRepresentation)!;
 		public AdvancedShader.Data data => rep.data;
 
 		private readonly UnboundVectorControl[] uvControls;
 		private readonly Cycler restrictUVsButton;
+		private readonly Button resetButton;
 
 		public AdvancedShaderUVPanel(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos) : base(owner, IDstring, parentNode, pos, new Vector2(250f, 265f), "Vertex UVs")
 		{
@@ -24,9 +20,10 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 				owner.placedObjectsContainer.AddChild(sprite);
 			}
 
-			size = new Vector2(250f, 5f + 60f * data.vertices.Length + 20f);
+			size = new Vector2(250f, 5f + 60f * data.vertices.Length + 40f);
 
 			subNodes.Add(restrictUVsButton = new Cycler(owner, "AdvancedShader_UVPanel_Restrict", this, new Vector2(5f, size.y - 20f), 240f, "Clamp UVs: ", ["NO", "YES"]));
+			subNodes.Add(resetButton = new Button(owner, "AdvancedShader_UVPanel_Reset", this, new Vector2(5f, size.y - 40f), 240f, "Reset UVs"));
 			restrictUVsButton.currentAlternative = data.restrictUVs ? 1 : 0;
 
 			uvControls = new UnboundVectorControl[data.uvs.Length];
@@ -56,6 +53,23 @@ namespace RegionKit.Modules.Objects.AdvancedShaderController
 			for (int i = 0; i < uvControls.Length; i++)
 			{
 				data.uvs[i] = uvControls[i].Value;
+			}
+		}
+
+		public void Signal(DevUISignalType type, DevUINode sender, string message)
+		{
+			if (sender == resetButton)
+			{
+				data.ResetUVs();
+				RefreshUVs();
+			}
+		}
+
+		public void RefreshUVs()
+		{
+			for (int i = 0; i < uvControls.Length; i++)
+			{
+				uvControls[i].Value = data.uvs[i];
 			}
 		}
 	}
