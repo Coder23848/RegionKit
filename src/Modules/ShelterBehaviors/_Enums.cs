@@ -5,7 +5,7 @@ public static class _Enums
 	/// <summary>
 	/// Signleton POM object for customizing shelter behaviors. required in a room for others to work
 	/// </summary>
-	public static readonly PlacedObject.Type ShelterBhvrManager = new("ShelterBhvrManager", true);
+	//public static readonly PlacedObject.Type ShelterBhvrManager = new("ShelterBhvrManager", true);
 	/// <summary>
 	/// An additional door
 	/// </summary>

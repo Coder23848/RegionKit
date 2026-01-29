@@ -23,8 +23,9 @@ public static class _Module
 	{
 		try
 		{
+			On.ShelterDoor.IsTileInsideShelterRange += ShelterDoor_IsTileInsideShelterRange;
 			On.ShelterDoor.Close += ShelterDoor_Close;
-			IL.ShelterDoor.ctor += ShelterDoor_ctor;
+			On.ShelterDoor.ctor += ShelterDoor_ctor;
 		}
 		catch (Exception ex)
 		{
@@ -36,8 +37,9 @@ public static class _Module
 	{
 		try
 		{
+			On.ShelterDoor.IsTileInsideShelterRange -= ShelterDoor_IsTileInsideShelterRange;
 			On.ShelterDoor.Close -= ShelterDoor_Close;
-			IL.ShelterDoor.ctor -= ShelterDoor_ctor;
+			On.ShelterDoor.ctor -= ShelterDoor_ctor;
 		}
 		catch (Exception ex)
 		{
@@ -45,13 +47,31 @@ public static class _Module
 		}
 	}
 
-	private static void ShelterDoor_ctor(ILContext il)
+	private static bool ShelterDoor_IsTileInsideShelterRange(On.ShelterDoor.orig_IsTileInsideShelterRange orig, AbstractRoom room, IntVector2 tile)
 	{
-		var c = new ILCursor(il);
+		bool flag = true;
+		if (room.realizedRoom is Room r && ShelterDataManager.TryGetShelterDataManager(r, out var manager))
+		{
+			flag = manager!.TileInZones(tile);
+		}
+		return flag && orig(room, tile);
 	}
 
 	private static void ShelterDoor_Close(On.ShelterDoor.orig_Close orig, ShelterDoor self)
 	{
+		if (ShelterDataManager.TryGetShelterDataManager(self.room, out var manager) && !self.room.PlayersInRoom.All(manager!.ZoneCheck))
+		{
+			return;
+		}
 		orig(self);
+	}
+
+	private static void ShelterDoor_ctor(On.ShelterDoor.orig_ctor orig, ShelterDoor self, Room room)
+	{
+		orig(self, room);
+		if (ShelterDataManager.TryGetShelterDataManager(room, out var manager) && manager!.TryGetRandomSpawnPoint(out var spawnPoint) && spawnPoint != null)
+		{
+			self.playerSpawnPos = room.GetTilePosition(spawnPoint.Value);
+		}
 	}
 }
