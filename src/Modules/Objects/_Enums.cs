@@ -73,6 +73,10 @@ public class _Enums
 	/// </summary>
 	public static PlacedObject.Type BGFlatLight = new(nameof(BGFlatLight), true);
 	/// <summary>
+	/// Shader thingy
+	/// </summary>
+	public static PlacedObject.Type AdvancedShader = new(nameof(AdvancedShader), true);
+	/// <summary>
 	/// Big water wheel
 	/// </summary>
 	public static PlacedObject.Type BigWaterWheel = new(nameof(BigWaterWheel), true);
