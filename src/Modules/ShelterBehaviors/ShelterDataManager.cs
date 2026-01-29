@@ -32,6 +32,9 @@ namespace RegionKit.Modules.ShelterBehaviors
 		private readonly List<IntRect> triggerZones = [];
 		private readonly List<IntRect> noTriggerZones = [];
 
+		public readonly (IntVector2 pos, IntVector2 dir)? firstShelterDoorSpot = null;
+		public readonly List<CosmeticShelterDoor> cosmeticShelterDoors = [];
+
 		private ShelterDataManager(Room room)
 		{
 			this.room = room;
@@ -48,6 +51,21 @@ namespace RegionKit.Modules.ShelterBehaviors
 				else if (po.type == _Enums.ShelterBhvrNoTriggerZone)
 				{
 					noTriggerZones.Add((po.data as PlacedObject.GridRectObjectData)!.Rect);
+				}
+				else if (po.type == _Enums.ShelterBhvrPlacedDoor)
+				{
+					IntVector2 dir = (po.data as ManagedData)!.GetValue<IntVector2>("dir");
+
+                    if (firstShelterDoorSpot == null)
+					{
+						firstShelterDoorSpot = (room.GetTilePosition(po.pos), dir);
+					}
+					else
+					{
+						var door = new CosmeticShelterDoor(room, room.GetTilePosition(po.pos), dir);
+                        cosmeticShelterDoors.Add(door);
+						room.AddObject(door);
+					}
 				}
 			}
 		}
