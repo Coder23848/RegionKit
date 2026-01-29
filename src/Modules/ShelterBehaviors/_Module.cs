@@ -1,52 +1,19 @@
 ﻿
+using MonoMod.Cil;
+
 namespace RegionKit.Modules.ShelterBehaviors;
 ///<inheritdoc/>
 [RegionKitModule(nameof(Enable), nameof(Disable), nameof(Setup), moduleName: "Shelter Behaviors")]
 public static class _Module
 {
 	public const string SHELTERS_POM_CATEGORY = RK_POM_CATEGORY + "-Shelters";
-	/// <summary>
-	/// Makes creatures <see cref="ShelterBehaviorManager.CycleSpawnPosition"/> on <see cref="AbstractCreature.RealizeInRoom"/>
-	/// </summary>
-	/// <param name="orig"></param>
-	/// <param name="instance"></param>
-	public static void CreatureShuffleHook(On.AbstractCreature.orig_RealizeInRoom orig, AbstractCreature instance)
-	{
-		var mngr = instance.Room.realizedRoom?.updateList?.FirstOrDefault(x => x is ShelterBehaviorManager) as ShelterBehaviorManager;
-		mngr?.CycleSpawnPosition();
-		mngr?.ApplySpawnHack(mngr.CurrentSpawnPos());
-		orig(instance);
-		mngr?.UndoSpawnHack();
-	}
+
 	internal static void Setup()
 	{
-		RegisterManagedObject<ShelterBehaviorManager, ShelterManagerData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrManager), SHELTERS_POM_CATEGORY);
-		// RegisterFullyManagedObjectType(new ManagedField[]{
-		// 	new BooleanField("nvd", true, displayName:"No Vanilla Door"),
-		// 	new BooleanField("htt", false, displayName:"Hold To Trigger"),
-		// 	new IntegerField("htts", 1, 10, 4, displayName:"HTT Trigger Speed"),
-		// 	new BooleanField("cs", false, displayName:"Consumable Shelter"),
-		// 	new IntegerField("csmin", -1, 30, 3, displayName:"Consum. Cooldown Min"),
-		// 	new IntegerField("csmax", 0, 30, 6, displayName:"Consum. Cooldown Max"),
-		// 	new IntegerField("ftt", 0, 400, 20, ManagedFieldWithPanel.ControlType.slider, displayName:"Frames to Trigger"),
-		// 	new IntegerField("fts", 0, 400, 40, ManagedFieldWithPanel.ControlType.slider, displayName:"Frames to Sleep"),
-		// 	new IntegerField("ftsv", 0, 400, 60, ManagedFieldWithPanel.ControlType.slider, displayName:"Frames to Starvation"),
-		// 	new IntegerField("ftw", 0, 400, 120, ManagedFieldWithPanel.ControlType.slider, displayName:"Frames to Win"),
-		// 	new IntegerField("ini", 0, 400, 120, ManagedFieldWithPanel.ControlType.slider, displayName:"Initial wait"),
-		// 	new IntegerField("ouf", 0, 400, 120, ManagedFieldWithPanel.ControlType.slider, displayName:"Open up anim"),
-		// 	new BooleanField("ani", false, displayName:"Animate Water"),
-
-		// 	}, typeof(ShelterBehaviorManager), nameof(_Enums.ShelterBhvrManager), SHELTERS_POM_CATEGORY);
 		RegisterManagedObject<HoldToTriggerTutorialObject, HoldToTriggerTutorialData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
-
-		// RegisterFullyManagedObjectType(new ManagedField[]{
-		//     //new BooleanField("httt", false, displayName: "HTT Tutorial"),
-		//     new IntegerField("htttcd", -1, 12, 6, displayName: "HTT Tut. Cooldown"), }, typeof(ShelterBehaviorManager.HoldToTriggerTutorialObject), nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
-
 		RegisterFullyManagedObjectType(new ManagedField[]{
 				new IntVector2Field("dir", new RWCustom.IntVector2(0,1), IntVector2Field.IntVectorReprType.fourdir), }
 		, null!, nameof(_Enums.ShelterBhvrPlacedDoor), SHELTERS_POM_CATEGORY);
-
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrTriggerZone), SHELTERS_POM_CATEGORY, typeof(PlacedObject.GridRectObjectData), typeof(DevInterface.GridRectObjectRepresentation));
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrNoTriggerZone), SHELTERS_POM_CATEGORY, typeof(PlacedObject.GridRectObjectData), typeof(DevInterface.GridRectObjectRepresentation));
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrSpawnPosition), SHELTERS_POM_CATEGORY, null!, null!); // No data required :)
@@ -54,13 +21,37 @@ public static class _Module
 
 	internal static void Enable()
 	{
-		// Hooking code goose hre
-		On.AbstractCreature.RealizeInRoom += CreatureShuffleHook;
-		ShelterBehaviorManager.Override_HTT = System.IO.File.Exists(AssetManager.ResolveFilePath("world/htt.txt"));
+		try
+		{
+			On.ShelterDoor.Close += ShelterDoor_Close;
+			IL.ShelterDoor.ctor += ShelterDoor_ctor;
+		}
+		catch (Exception ex)
+		{
+			LogError(ex);
+		}
 	}
 
 	internal static void Disable()
 	{
-		On.AbstractCreature.RealizeInRoom -= CreatureShuffleHook;
+		try
+		{
+			On.ShelterDoor.Close -= ShelterDoor_Close;
+			IL.ShelterDoor.ctor -= ShelterDoor_ctor;
+		}
+		catch (Exception ex)
+		{
+			LogError(ex);
+		}
+	}
+
+	private static void ShelterDoor_ctor(ILContext il)
+	{
+		var c = new ILCursor(il);
+	}
+
+	private static void ShelterDoor_Close(On.ShelterDoor.orig_Close orig, ShelterDoor self)
+	{
+		orig(self);
 	}
 }
