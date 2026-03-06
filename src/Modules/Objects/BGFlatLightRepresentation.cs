@@ -54,7 +54,7 @@ namespace RegionKit.Modules.Objects
 				modeCycler.currentAlternative = Math.Max(Data.mode.index, 0);
                 modeCycler.Text = modeCycler.baseName + modeCycler.alternatives[modeCycler.currentAlternative];
                 cloudCycler.currentAlternative = Data.cloudMode ? 1 : 0;
-                cloudCycler.Text = cloudCycler.baseName + modeCycler.alternatives[cloudCycler.currentAlternative];
+                cloudCycler.Text = cloudCycler.baseName + cloudCycler.alternatives[cloudCycler.currentAlternative];
 
 				// These get added in Refresh
 				redSlider = null!;
