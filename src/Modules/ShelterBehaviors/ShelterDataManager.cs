@@ -36,7 +36,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 		public readonly (IntVector2 pos, IntVector2 dir)? firstShelterDoorSpot = null;
 		public readonly List<CosmeticShelterDoor> cosmeticShelterDoors = [];
 
-		public readonly (int minCycles, int maxCycles)? consumableShelterData = null;
+		public readonly (int minCycles, int maxCycles, float chance)? consumableShelterData = null;
 		public readonly int consumableShelterIndex = -1;
 
 		private ShelterDataManager(Room room)
@@ -76,13 +76,14 @@ namespace RegionKit.Modules.ShelterBehaviors
 				{
 					int min = (po.data as ManagedData)!.GetValue<int>("min");
 					int max = (po.data as ManagedData)!.GetValue<int>("max");
-					consumableShelterData = (min, max);
+					float chance = (po.data as ManagedData)!.GetValue<float>("chance");
+					consumableShelterData = (min, max, chance);
 					consumableShelterIndex = i;
 				}
 			}
 		}
 
-		public Vector2? RandomSpawnPoint()
+		private Vector2? RandomSpawnPoint()
 		{
 			if (spawnPoints.Count == 0)
 			{
@@ -132,7 +133,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 
 		public void ConsumeShelter()
 		{
-			if (consumableShelterIndex > -1 && room.game.IsStorySession && consumableShelterData != null)
+			if (consumableShelterIndex > -1 && room.game.IsStorySession && consumableShelterData != null && Random.value <= consumableShelterData.Value.chance)
 			{
 				var cyclesToWait = consumableShelterData.Value.minCycles > 0 ? Random.Range(consumableShelterData.Value.minCycles, consumableShelterData.Value.maxCycles + 1) : -1;
                 room.game.GetStorySession.saveState.ReportConsumedItem(room.world, false, room.abstractRoom.index, consumableShelterIndex, cyclesToWait);

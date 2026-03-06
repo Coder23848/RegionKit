@@ -18,8 +18,9 @@ public static class _Module
 		RegisterFullyManagedObjectType([new IntVector2Field("dir", new IntVector2(0,1), IntVector2Field.IntVectorReprType.fourdir)], null!, nameof(_Enums.ShelterBhvrPlacedDoor), SHELTERS_POM_CATEGORY);
 		RegisterManagedObject<HoldToTriggerTutorialObject, HoldToTriggerTutorialData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
 		RegisterFullyManagedObjectType([
-			new IntegerField("min", -1, 30, 3, displayName:"Consum. Cooldown Min"),
-			new IntegerField("max", 0, 30, 6, displayName:"Consum. Cooldown Max"),
+			new IntegerField("min", -1, 30, 3, displayName:"Cooldown Min"),
+			new IntegerField("max", 0, 30, 6, displayName:"Cooldown Max"),
+			new FloatField("chance", 0f, 1f, 1f, displayName: "Trigger Chance"),
 			], null!, nameof(_Enums.ShelterBhvrConsumableShelter), SHELTERS_POM_CATEGORY);
 	}
 
@@ -36,7 +37,7 @@ public static class _Module
 			On.ShelterDoor.Update += ShelterDoor_Update;
 			On.Room.AddObject += Room_AddObject;
 			IL.Player.Update += Player_Update;
-			_manualHooks.Add(new Hook(typeof(ShelterDoor).GetProperty(nameof(ShelterDoor.Broken)).GetGetMethod(), ShelterDoor_get_Broken));
+			_manualHooks.Add(new Hook(typeof(ShelterDoor).GetProperty(nameof(ShelterDoor.Broken))!.GetGetMethod(), ShelterDoor_get_Broken));
 		}
 		catch (Exception ex)
 		{
