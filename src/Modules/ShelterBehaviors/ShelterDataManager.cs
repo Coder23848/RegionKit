@@ -6,7 +6,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 	public class ShelterDataManager
 	{
 		private static readonly ConditionalWeakTable<Room, ShelterDataManager> dataCWT = new();
-		public static bool TryGetShelterDataManager(Room room, out ShelterDataManager? data)
+		public static bool TryGetManager(Room? room, out ShelterDataManager? data)
 		{
 			// Extra safety
 			data = null;
@@ -18,7 +18,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 				data = shelterDataManager;
 				return true;
 			}
-            else if (room.abstractRoom.shelter && !room.abstractRoom.isAncientShelter)
+            if (room.abstractRoom.shelter && !room.abstractRoom.isAncientShelter)
             {
                 data = new ShelterDataManager(room);
                 dataCWT.Add(room, data);
@@ -26,6 +26,8 @@ namespace RegionKit.Modules.ShelterBehaviors
             }
 			return false;
 		}
+
+		public static readonly Dictionary<string, int> consumedShelters = [];
 
 		private readonly Room room;
 
@@ -49,6 +51,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 				PlacedObject po = room.roomSettings.placedObjects[i];
 				if (po.type == _Enums.ShelterBhvrSpawnPosition)
 				{
+					LogDebug($"Shelter behavior spawn point: {po.pos}");
 					spawnPoints.Add(po.pos);
 				}
 				else if (po.type == _Enums.ShelterBhvrTriggerZone)
@@ -62,6 +65,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 				else if (po.type == _Enums.ShelterBhvrPlacedDoor && !doorless)
 				{
 					IntVector2 dir = (po.data as ManagedData)!.GetValue<IntVector2>("dir");
+					LogDebug($"Shelter behavior placed door: {room.GetTilePosition(po.pos)}");
 
                     if (firstShelterDoorSpot == null)
 					{
@@ -81,6 +85,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 					float chance = (po.data as ManagedData)!.GetValue<float>("chance");
 					consumableShelterData = (min, max, chance);
 					consumableShelterIndex = i;
+					LogDebug($"Shelter behavior consumable shelter: {consumableShelterIndex}");
 				}
 				else if (po.type == _Enums.ShelterBhvrDoorless)
 				{
@@ -90,6 +95,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 						room.RemoveObject(door);
 					}
 					cosmeticShelterDoors.Clear();
+					LogDebug($"Shelter behavior doorless! (cosmetic doors removed)");
 				}
 				else if (po.type == _Enums.ShelterBhvrHoldToTrigger)
 				{
