@@ -16,7 +16,7 @@ public static class _Module
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrNoTriggerZone), SHELTERS_POM_CATEGORY, typeof(PlacedObject.GridRectObjectData), typeof(DevInterface.GridRectObjectRepresentation));
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrSpawnPosition), SHELTERS_POM_CATEGORY, null!, null!); // No data required :)
 		RegisterFullyManagedObjectType([new IntVector2Field("dir", new IntVector2(0,1), IntVector2Field.IntVectorReprType.fourdir)], null!, nameof(_Enums.ShelterBhvrPlacedDoor), SHELTERS_POM_CATEGORY);
-		RegisterManagedObject<HoldToTriggerTutorialObject, HoldToTriggerTutorialData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
+		//RegisterManagedObject<HoldToTriggerTutorialObject, HoldToTriggerTutorialData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
 		RegisterFullyManagedObjectType([
 			new IntegerField("min", -1, 30, 3, displayName:"Cooldown Min"),
 			new IntegerField("max", 0, 30, 6, displayName:"Cooldown Max"),
@@ -87,18 +87,34 @@ public static class _Module
 			return;
 		}
 		orig(self);
-		if (self.IsClosing)
+		if (self.IsClosing && manager != null)
 		{
-			manager?.ConsumeShelter();
+			manager.ConsumeShelter();
+			if (manager.doorless)
+			{
+				self.closedFac = 1f;
+				self.closeSpeed = 1f;
+				ShelterEventHandler.FireShelterEvent(self.room, 1f, 1f);
+				self.DoorClosed();
+			}
 		}
 	}
 
 	private static void ShelterDoor_ctor(On.ShelterDoor.orig_ctor orig, ShelterDoor self, Room room)
 	{
 		orig(self, room);
-		if (ShelterDataManager.TryGetShelterDataManager(room, out var manager) && manager!.TryGetRandomSpawnPoint(out var spawnPoint) && spawnPoint != null)
+		if (ShelterDataManager.TryGetShelterDataManager(room, out var manager))
 		{
-			self.playerSpawnPos = room.GetTilePosition(spawnPoint.Value);
+			if (manager!.TryGetRandomSpawnPoint(out var spawnPoint) && spawnPoint != null)
+			{
+				self.playerSpawnPos = room.GetTilePosition(spawnPoint.Value);
+			}
+
+			if (self.closedFac > 0 && manager.doorless)
+			{
+				self.closedFac = 0f;
+				self.closeSpeed = -1f;
+			}
 		}
 	}
 
@@ -135,11 +151,28 @@ public static class _Module
 	{
 		var c = new ILCursor(il);
 		int distLocRef = 40;
-		ILLabel brIfFalse = null!;
-
-		// Extend shelter door manhattan distance check
+		
+		// Part 1: reduce shelter door manhattan distance
 		c.GotoNext(x => x.MatchLdstr("wtdb_s02"));
-		c.GotoNext(x => x.MatchStloc(out distLocRef));
+		c.GotoPrev(MoveType.AfterLabel, x => x.MatchStloc(out distLocRef));
+		c.Emit(OpCodes.Ldarg_0);
+		c.EmitDelegate((int distance, Player self) =>
+		{
+			if (self.room != null &&
+			    ShelterDataManager.TryGetShelterDataManager(self.room, out ShelterDataManager? manager) &&
+			    manager != null &&
+			    manager.holdToTrigger)
+			{
+				distance = 1;
+			}
+
+			return distance;
+		});
+
+		// Part 2: extend shelter door manhattan distance check
+		ILLabel brIfFalse = null!;
+		c.GotoNext(x => x.MatchLdstr("wtdb_s02"));
+		c.GotoNext(x => x.MatchStloc(distLocRef));
 		c.GotoNext(MoveType.After, x => x.MatchBle(out brIfFalse));
 		
 		c.Emit(OpCodes.Ldarg_0);
@@ -154,6 +187,23 @@ public static class _Module
 			return true;
 		});
 		c.Emit(OpCodes.Brfalse, brIfFalse);
+		
+		// Part 3: hold to trigger doesn't trigger the normal way
+		c.GotoNext(MoveType.After, x => x.MatchLdfld<Player>(nameof(Player.touchedNoInputCounter)));
+		
+		c.Emit(OpCodes.Ldarg_0);
+		c.EmitDelegate((int touchedNoInputCounter, Player self) =>
+		{
+			if (self.room != null &&
+			    ShelterDataManager.TryGetShelterDataManager(self.room, out ShelterDataManager? manager) &&
+			    manager != null &&
+			    manager.holdToTrigger)
+			{
+				touchedNoInputCounter = 0;
+			}
+			
+			return touchedNoInputCounter;
+		});
 	}
 
 	private static bool ShelterDoor_get_Broken(Func<ShelterDoor, bool> orig, ShelterDoor self)

@@ -38,6 +38,8 @@ namespace RegionKit.Modules.ShelterBehaviors
 
 		public readonly (int minCycles, int maxCycles, float chance)? consumableShelterData = null;
 		public readonly int consumableShelterIndex = -1;
+		public readonly bool holdToTrigger = false;
+		public readonly bool doorless = false;
 
 		private ShelterDataManager(Room room)
 		{
@@ -57,7 +59,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 				{
 					noTriggerZones.Add((po.data as PlacedObject.GridRectObjectData)!.Rect);
 				}
-				else if (po.type == _Enums.ShelterBhvrPlacedDoor)
+				else if (po.type == _Enums.ShelterBhvrPlacedDoor && !doorless)
 				{
 					IntVector2 dir = (po.data as ManagedData)!.GetValue<IntVector2>("dir");
 
@@ -80,6 +82,19 @@ namespace RegionKit.Modules.ShelterBehaviors
 					consumableShelterData = (min, max, chance);
 					consumableShelterIndex = i;
 				}
+				else if (po.type == _Enums.ShelterBhvrDoorless)
+				{
+					doorless = true;
+					foreach (var door in cosmeticShelterDoors)
+					{
+						room.RemoveObject(door);
+					}
+					cosmeticShelterDoors.Clear();
+				}
+				else if (po.type == _Enums.ShelterBhvrHoldToTrigger)
+				{
+					holdToTrigger = true;
+				}
 			}
 		}
 
@@ -89,7 +104,7 @@ namespace RegionKit.Modules.ShelterBehaviors
 			{
 				return null;
 			}
-			else if (spawnPoints.Count == 1)
+			if (spawnPoints.Count == 1)
 			{
 				return spawnPoints[0];
 			}

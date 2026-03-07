@@ -17,21 +17,25 @@ public static class _Enums
 	/// <summary>
 	/// A zone where player can't sleep
 	/// </summary>
-	/// <returns></returns>
 	public static readonly PlacedObject.Type ShelterBhvrNoTriggerZone = new(nameof(ShelterBhvrNoTriggerZone), true);
-	/// <summary>
-	/// Shows HoldToTrigger tutorial
-	/// </summary>
-	/// <returns></returns>
-	public static readonly PlacedObject.Type ShelterBhvrHTTTutorial = new(nameof(ShelterBhvrHTTTutorial), true);
+	// /// <summary>
+	// /// Shows HoldToTrigger tutorial
+	// /// </summary>
+	// public static readonly PlacedObject.Type ShelterBhvrHTTTutorial = new(nameof(ShelterBhvrHTTTutorial), true);
 	/// <summary>
 	/// An additional spawn position for the shelter
 	/// </summary>
-	/// <returns></returns>
 	public static readonly PlacedObject.Type ShelterBhvrSpawnPosition = new(nameof(ShelterBhvrSpawnPosition), true);
 	/// <summary>
 	/// An additional spawn position for the shelter
 	/// </summary>
-	/// <returns></returns>
 	public static readonly PlacedObject.Type ShelterBhvrConsumableShelter = new(nameof(ShelterBhvrConsumableShelter), true);
+	/// <summary>
+	/// A shelter where holding is required to trigger
+	/// </summary>
+	public static readonly PlacedObject.Type ShelterBhvrHoldToTrigger = new(nameof(ShelterBhvrHoldToTrigger), true);
+	/// <summary>
+	/// Removes the vanilla door graphics
+	/// </summary>
+	public static readonly PlacedObject.Type ShelterBhvrDoorless = new(nameof(ShelterBhvrDoorless), true);
 }
