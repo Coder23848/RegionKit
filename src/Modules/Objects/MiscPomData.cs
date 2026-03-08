@@ -73,6 +73,7 @@ public class ColoredSSFusesData : ManagedData
 	public Color ActiveColor => GetValue<Color>("activeCol");
 	public Color BrokenColor => GetValue<Color>("brokenCol");
 	public float BrokenAmt => GetValue<float>("broken");
+	public float Depth => GetValue<float>("depth");
 
 	public IntVector2 TilePos => Room.StaticGetTilePosition(owner.pos);
 	public IntRect Rect => new IntRect(
@@ -87,6 +88,7 @@ public class ColoredSSFusesData : ManagedData
 		new ColorField("activeCol", Color.blue, ManagedFieldWithPanel.ControlType.button, displayName: "Active color"),
 		new ColorField("brokenCol", Color.red, ManagedFieldWithPanel.ControlType.button, displayName: "Broken color"),
 		new FloatField("broken", 0f, 1f, 0f, 0.01f, displayName: "Broken amount"),
+		new FloatField("depth", 0f, 30f, 0f, 0f, displayName: "Depth"),
 	])
 	{
 	}
