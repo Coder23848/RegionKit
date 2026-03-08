@@ -10,8 +10,9 @@ internal static class _Module
 		try
 		{
 			LoadShaders();
-			FloatingDebris.types["Dust"] = new Dust.DustSpawner(false);
-			FloatingDebris.types["White Dust"] = new Dust.DustSpawner(true);
+
+			FloatingDebris.types["RK Dust"] = new Dust.DustSpawner(false);
+			FloatingDebris.types["RK White Dust"] = new Dust.DustSpawner(true);
 		}
 		catch (Exception ex)
 		{
@@ -23,8 +24,8 @@ internal static class _Module
 	{
 		try
 		{
-			FloatingDebris.types.Remove("Dust");
-			FloatingDebris.types.Remove("White Dust");
+			FloatingDebris.types.Remove("RK Dust");
+			FloatingDebris.types.Remove("RK White Dust");
 		}
 		catch (Exception ex)
 		{
