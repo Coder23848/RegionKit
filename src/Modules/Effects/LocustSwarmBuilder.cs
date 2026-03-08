@@ -250,9 +250,9 @@ namespace RegionKit.Modules.Effects
 			//       && effect!.amount >= 0.75f;
 		}
 
-		/*public static void DoPathfind(LocustSystem.Swarm self)
+		public static void DoPathfind(LocustSystem.Swarm self)
         {
-            LogDebug("LocustSwarm.cs: DoPathfind");
+            /*LogDebug("LocustSwarm.cs: DoPathfind");
             UAD uad = self.owner.room.updateList.OfType<UAD>().FirstOrDefault()!;
             if (!uad.SwarmPaths.ContainsKey(self))
                 uad.SwarmPaths.Add(self, new PathingInformation(self));
@@ -278,8 +278,8 @@ namespace RegionKit.Modules.Effects
             {
                 LogDebug("LocustSwarm.cs: Clearing node");
                 path.Nodes.RemoveAt(0);
-            }
-        }*/
+            }*/
+        }
 
 		internal static void Setup()
 		{
@@ -319,18 +319,18 @@ namespace RegionKit.Modules.Effects
 					c.Index--;
 					c.Emit(OpCodes.Brtrue_S, cont);
 					c.Emit(OpCodes.Ldarg_0);
-					c.Emit(OpCodes.Callvirt, typeof(LocustSwarm).GetMethod("CanPathfind"));
+					c.Emit(OpCodes.Callvirt, typeof(LocustSwarm).GetMethod(nameof(LocustSwarm.CanPathfind)));
 					//original brfalse.s IL_02b5
 					c.Index++;
 					c.Emit(OpCodes.Ldarg_0);
-					c.Emit(OpCodes.Callvirt, typeof(LocustSwarm).GetMethod("DoPathfind"));
+					c.Emit(OpCodes.Callvirt, typeof(LocustSwarm).GetMethod(nameof(LocustSwarm.DoPathfind)));
 					c.Emit(OpCodes.Br, skip);
 					c.MarkLabel(cont);
 
 					if (c.TryGotoNext(MoveType.Before,
 							x => x.MatchLdarg(0),
 							x => x.MatchLdarg(0),
-							x => x.MatchLdfld(typeof(LocustSystem.Swarm).GetField("locusts"))))
+							x => x.MatchLdfld(typeof(LocustSystem.Swarm).GetField(nameof(LocustSystem.Swarm.locusts)))))
 					{
 						c.MarkLabel(skip);
 						if (c.TryGotoNext(MoveType.After,
@@ -341,7 +341,7 @@ namespace RegionKit.Modules.Effects
 							ILLabel cont2 = il.DefineLabel();
 							ILLabel skip2 = il.DefineLabel();
 							c.Index -= 4;
-							c.Emit(OpCodes.Callvirt, typeof(LocustSwarm).GetMethod("ShouldKillFaster"));
+							c.Emit(OpCodes.Callvirt, typeof(LocustSwarm).GetMethod(nameof(LocustSwarm.ShouldKillFaster)));
 							c.Emit(OpCodes.Brfalse_S, cont2);
 							c.Emit(OpCodes.Ldc_R4, 30f);
 							c.Emit(OpCodes.Br_S, skip2);
