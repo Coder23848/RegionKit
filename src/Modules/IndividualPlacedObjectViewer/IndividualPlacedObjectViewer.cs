@@ -285,7 +285,7 @@ internal static partial class IndividualPlacedObjectViewer
 	private static void IL_ObjectsPage_Refresh(ILContext il)
 	{
 		ILCursor cursor = new ILCursor(il);
-		cursor.Index = 2;
+		cursor.GotoNext(MoveType.After, i => i.MatchCall<Page>("Refresh"));
 		cursor.RemoveRange(26);
 		cursor.Emit(OpCodes.Ldarg_0);
 
