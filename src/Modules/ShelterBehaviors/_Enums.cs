@@ -1,4 +1,4 @@
-namespace RegionKit.Modules.ShelterBehaviors;
+﻿namespace RegionKit.Modules.ShelterBehaviors;
 ///<inheritdoc/>
 public static class _Enums
 {
@@ -18,10 +18,10 @@ public static class _Enums
 	/// A zone where player can't sleep
 	/// </summary>
 	public static readonly PlacedObject.Type ShelterBhvrNoTriggerZone = new(nameof(ShelterBhvrNoTriggerZone), true);
-	// /// <summary>
-	// /// Shows HoldToTrigger tutorial
-	// /// </summary>
-	// public static readonly PlacedObject.Type ShelterBhvrHTTTutorial = new(nameof(ShelterBhvrHTTTutorial), true);
+	/// <summary>
+	/// Shows HoldToTrigger tutorial
+	/// </summary>
+	public static readonly PlacedObject.Type ShelterBhvrHTTTutorial = new(nameof(ShelterBhvrHTTTutorial), true);
 	/// <summary>
 	/// An additional spawn position for the shelter
 	/// </summary>

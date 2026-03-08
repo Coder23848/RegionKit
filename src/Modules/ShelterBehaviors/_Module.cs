@@ -6,6 +6,7 @@ using MonoMod.Cil;
 namespace RegionKit.Modules.ShelterBehaviors;
 ///<inheritdoc/>
 [RegionKitModule(nameof(Enable), nameof(Disable), nameof(Setup), moduleName: "Shelter Behaviors")]
+
 public static class _Module
 {
 	public const string SHELTERS_POM_CATEGORY = RK_POM_CATEGORY + "-Shelters";
@@ -19,7 +20,7 @@ public static class _Module
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrDoorless), SHELTERS_POM_CATEGORY, null!, null!);
 		RegisterEmptyObjectType(nameof(_Enums.ShelterBhvrHoldToTrigger), SHELTERS_POM_CATEGORY, null!, null!);
 		RegisterFullyManagedObjectType([new IntVector2Field("dir", new IntVector2(0,1), IntVector2Field.IntVectorReprType.fourdir)], null!, nameof(_Enums.ShelterBhvrPlacedDoor), SHELTERS_POM_CATEGORY);
-		//RegisterManagedObject<HoldToTriggerTutorialObject, HoldToTriggerTutorialData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
+		RegisterManagedObject<HoldToTriggerTutorialObject, HoldToTriggerTutorialData, ManagedRepresentation>(nameof(_Enums.ShelterBhvrHTTTutorial), SHELTERS_POM_CATEGORY);
 		RegisterFullyManagedObjectType([
 			new IntegerField("min", -1, 30, 3, displayName:"Cooldown Min"),
 			new IntegerField("max", 0, 30, 6, displayName:"Cooldown Max"),
@@ -38,17 +39,12 @@ public static class _Module
 			On.ShelterDoor.Update += ShelterDoor_Update;
 			On.ShelterDoor.DrawSprites += ShelterDoor_DrawSprites;
 			On.Room.AddObject += Room_AddObject;
-			//On.HUD.FoodMeter.Draw += FoodMeter_Draw;
 			IL.Player.Update += Player_Update;
 			
 			On.RegionState.ctor += RegionState_ctor;
 			On.RegionState.SaveToString += RegionState_SaveToString;
 
-			On.Player.Update += (orig, self, eu) =>
-			{
-				orig(self, eu);
-				if (self.room is not null) DebugDrawing.DrawText(self.room, "Force sleep: " + self.forceSleepCounter, self.firstChunk.pos, Color.white);
-			};
+			// TODO: fix food bar hud from flashing red and moving. Also potentially quicken when not starving?
 		}
 		catch (Exception ex)
 		{
@@ -67,7 +63,6 @@ public static class _Module
 			On.ShelterDoor.Update -= ShelterDoor_Update;
 			On.ShelterDoor.DrawSprites -= ShelterDoor_DrawSprites;
 			On.Room.AddObject -= Room_AddObject;
-			//On.HUD.FoodMeter.Draw -= FoodMeter_Draw;
 			IL.Player.Update -= Player_Update;
 			
 			On.RegionState.ctor -= RegionState_ctor;
@@ -171,20 +166,6 @@ public static class _Module
 		}
 	}
 
-	private static void FoodMeter_Draw(On.HUD.FoodMeter.orig_Draw orig, HUD.FoodMeter self, float timeStacker)
-	{
-		orig(self, timeStacker);
-		if (self.hud.owner is Player player
-		    && player.room is not null
-		    && player.room.abstractRoom.shelter
-		    && player.playerState.foodInStomach + player.FoodInRoom(player.room, false)
-		    >= (player.Malnourished ? player.MaxFoodInStomach : player.slugcatStats.foodToHibernate))
-		{
-			self.lineSprite.color = Color.white;
-			self.lineSprite.x = self.DrawPos(timeStacker).x + self.CircleDistance(timeStacker) * (Mathf.Lerp(self.lastShowSurvLim, self.showSurvLim, self.timeCounter) - 0.25f);
-		}
-	}
-
 	private static void Player_Update(ILContext il)
 	{
 		var c = new ILCursor(il);
@@ -193,7 +174,6 @@ public static class _Module
 		// Part 1a: conditional shortcut as false
 		c.GotoNext(MoveType.After, x => x.MatchLdfld<Player>(nameof(Player.stillInStartShelter)));
 
-		LogDebug(c);
 		c.Emit(OpCodes.Ldarg_0);
 		c.EmitDelegate((bool value, Player self) =>
 		{
@@ -209,7 +189,6 @@ public static class _Module
 		c.GotoNext(x => x.MatchLdfld<RainCycle>(nameof(RainCycle.cycleLength)));
 		c.GotoNext(MoveType.After, x => x.MatchBle(out httBrTo));
 
-		LogDebug(c);
 		c.Emit(OpCodes.Ldarg_0);
 		c.EmitDelegate((Player self) => ShelterDataManager.TryGetManager(self.room, out var manager) && manager!.holdToTrigger);
 		c.Emit(OpCodes.Brtrue, httBrTo);
@@ -218,14 +197,17 @@ public static class _Module
 		c.GotoNext(x => x.MatchLdfld<SaveState>(nameof(SaveState.malnourished)));
 		c.GotoPrev(x => x.MatchCallOrCallvirt<PhysicalObject>(nameof(PhysicalObject.IsTileSolid)));
 		c.GotoNext(MoveType.After, x => x.MatchBrfalse(out httBrTo));
+		c.MoveAfterLabels();
 
-		LogDebug(c);
+		var c2 = new ILCursor(c);
+		c2.Goto(httBrTo.Target);
+		c2.GotoPrev(x => x.MatchBr(out httBrTo));
+
 		c.Emit(OpCodes.Ldarg_0);
 		c.EmitDelegate((Player self) =>
 		{
 			if (ShelterDataManager.TryGetManager(self.room, out var manager) && manager!.holdToTrigger)
 			{
-				LogDebug("TRIGGER FORCE SLEEP!");
 				self.forceSleepCounter++;
 				return true;
 			}
