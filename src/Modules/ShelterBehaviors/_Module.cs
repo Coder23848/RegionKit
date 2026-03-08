@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -172,102 +173,131 @@ public static class _Module
 		
 		// Part 1: prevent forceSleepCounter = 0 in like 3 different places for hold to trigger shelters
 		// Part 1a: conditional shortcut as false
-		c.GotoNext(MoveType.After, x => x.MatchLdfld<Player>(nameof(Player.stillInStartShelter)));
-
-		c.Emit(OpCodes.Ldarg_0);
-		c.EmitDelegate((bool value, Player self) =>
+		if (c.TryGotoNext(MoveType.After, x => x.MatchLdfld<Player>(nameof(Player.stillInStartShelter))))
 		{
-			if (ShelterDataManager.TryGetManager(self.room, out var manager) && manager!.holdToTrigger)
+			c.Emit(OpCodes.Ldarg_0);
+			c.EmitDelegate((bool value, Player self) =>
 			{
-				value = true;
-			}
-			return value;
-		});
+				if (ShelterDataManager.TryGetManager(self.room, out var manager) && manager!.holdToTrigger)
+				{
+					value = true;
+				}
+				return value;
+			});
+		}
+		else
+		{
+			LogError("ShelterBehavior Player.Update IL part 1a fail!");
+			return;
+		}
 
 		// Part 1b: conditional shortcut as false
 		ILLabel httBrTo = null!;
-		c.GotoNext(x => x.MatchLdfld<RainCycle>(nameof(RainCycle.cycleLength)));
-		c.GotoNext(MoveType.After, x => x.MatchBle(out httBrTo));
-
-		c.Emit(OpCodes.Ldarg_0);
-		c.EmitDelegate((Player self) => ShelterDataManager.TryGetManager(self.room, out var manager) && manager!.holdToTrigger);
-		c.Emit(OpCodes.Brtrue, httBrTo);
+		if (c.TryGotoNext(x => x.MatchLdfld<RainCycle>(nameof(RainCycle.cycleLength)))
+			&& c.TryGotoNext(MoveType.After, x => x.MatchBle(out httBrTo)))
+		{
+			c.Emit(OpCodes.Ldarg_0);
+			c.EmitDelegate((Player self) => ShelterDataManager.TryGetManager(self.room, out var manager) && manager!.holdToTrigger);
+			c.Emit(OpCodes.Brtrue, httBrTo);
+		}
+		else
+		{
+			LogError("ShelterBehavior Player.Update IL part 1b fail!");
+			return;
+		}
 
 		// Part 1c: add increase logic
-		c.GotoNext(x => x.MatchLdfld<SaveState>(nameof(SaveState.malnourished)));
-		c.GotoPrev(x => x.MatchCallOrCallvirt<PhysicalObject>(nameof(PhysicalObject.IsTileSolid)));
-		c.GotoNext(MoveType.After, x => x.MatchBrfalse(out httBrTo));
-		c.MoveAfterLabels();
-
-		var c2 = new ILCursor(c);
-		c2.Goto(httBrTo.Target);
-		c2.GotoPrev(x => x.MatchBr(out httBrTo));
-
-		c.Emit(OpCodes.Ldarg_0);
-		c.EmitDelegate((Player self) =>
+		if (c.TryGotoNext(x => x.MatchLdfld<SaveState>(nameof(SaveState.malnourished)))
+			&& c.TryGotoPrev(x => x.MatchCallOrCallvirt<PhysicalObject>(nameof(PhysicalObject.IsTileSolid)))
+			&& c.TryGotoNext(MoveType.After, x => x.MatchBrfalse(out httBrTo)))
 		{
-			if (ShelterDataManager.TryGetManager(self.room, out var manager) && manager!.holdToTrigger)
+			c.MoveAfterLabels();
+
+			var c2 = new ILCursor(c);
+			c2.Goto(httBrTo.Target);
+			c2.GotoPrev(x => x.MatchBr(out httBrTo));
+
+			c.Emit(OpCodes.Ldarg_0);
+			c.EmitDelegate((Player self) =>
 			{
-				self.forceSleepCounter++;
-				return true;
-			}
-			return false;
-		});
-		c.Emit(OpCodes.Brtrue, httBrTo);
-		
-		// Part 2: reduce shelter door manhattan distance
+				if (ShelterDataManager.TryGetManager(self.room, out var manager) && manager!.holdToTrigger)
+				{
+					self.forceSleepCounter++;
+					return true;
+				}
+				return false;
+			});
+			c.Emit(OpCodes.Brtrue, httBrTo);
+		}
+		else
+		{
+			LogError("ShelterBehavior Player.Update IL part 1c fail!");
+			return;
+		}
+
+		// Part 2: adjust shelter door manhattan check, and also add checks for extra doors
 		int distLocRef = 40;
-		c.GotoNext(x => x.MatchLdstr("wtdb_s02"));
-		c.GotoPrev(MoveType.AfterLabel, x => x.MatchStloc(out distLocRef));
-		c.Emit(OpCodes.Ldarg_0);
-		c.EmitDelegate((int distance, Player self) =>
-		{
-			if (self.room != null &&
-			    ShelterDataManager.TryGetManager(self.room, out ShelterDataManager? manager) &&
-			    manager != null &&
-			    manager.holdToTrigger)
-			{
-				distance = 1;
-			}
-
-			return distance;
-		});
-
-		// Part 3: extend shelter door manhattan distance check
 		ILLabel brIfFalse = null!;
-		c.GotoNext(x => x.MatchLdstr("wtdb_s02"));
-		c.GotoNext(x => x.MatchStloc(distLocRef));
-		c.GotoNext(MoveType.After, x => x.MatchBle(out brIfFalse));
-		
-		c.Emit(OpCodes.Ldarg_0);
-		c.Emit(OpCodes.Ldloc, distLocRef);
-		c.EmitDelegate((Player self, int distance) =>
+		if (c.TryGotoNext(x => x.MatchCallOrCallvirt(typeof(Custom).GetMethod(nameof(Custom.ManhattanDistance), BindingFlags.Public | BindingFlags.Static, null, [typeof(IntVector2), typeof(IntVector2)], null)))
+			&& c.TryGotoNext(MoveType.AfterLabel, x => x.MatchBle(out brIfFalse)))
 		{
-			if (self.room != null && ShelterDataManager.TryGetManager(self.room, out ShelterDataManager? manager) && manager != null)
+			// Before ble
+			c.Emit(OpCodes.Ldarg_0);
+			c.EmitDelegate((int distance, Player self) =>
 			{
-				IntVector2 pos = self.abstractCreature.pos.Tile;
-                return manager.cosmeticShelterDoors.All(x => Custom.ManhattanDistance(x.origPos, pos) > distance); // All returns true if empty so this should be fine
-			}
-			return true;
-		});
-		c.Emit(OpCodes.Brfalse, brIfFalse);
-		
-		// Part 4: hold to trigger doesn't trigger the normal way
-		c.GotoNext(MoveType.After, x => x.MatchLdfld<Player>(nameof(Player.touchedNoInputCounter)));
-		
-		c.Emit(OpCodes.Ldarg_0);
-		c.EmitDelegate((int touchedNoInputCounter, Player self) =>
+				if (self.room != null &&
+					ShelterDataManager.TryGetManager(self.room, out ShelterDataManager? manager) &&
+					manager != null &&
+					manager.holdToTrigger)
+				{
+					distance = 1;
+				}
+
+				return distance;
+			});
+
+			c.Index++;
+
+			// After ble
+			c.Emit(OpCodes.Ldarg_0);
+			c.Emit(OpCodes.Ldloc, distLocRef);
+			c.EmitDelegate((Player self, int distance) =>
+			{
+				if (self.room != null && ShelterDataManager.TryGetManager(self.room, out ShelterDataManager? manager) && manager != null && !manager.holdToTrigger)
+				{
+					IntVector2 pos = self.abstractCreature.pos.Tile;
+					return manager.cosmeticShelterDoors.All(x => Custom.ManhattanDistance(x.origPos, pos) > distance); // .All() returns true if empty so this should be fine
+				}
+				return true;
+			});
+			c.Emit(OpCodes.Brfalse, brIfFalse);
+		}
+		else
 		{
-			if (self.room != null &&
-			    ShelterDataManager.TryGetManager(self.room, out ShelterDataManager? manager) &&
-			    manager != null &&
-			    manager.holdToTrigger)
+			LogError("ShelterBehavior Player.Update IL part 2 fail!");
+		}
+
+		// Part 3: hold to trigger doesn't trigger the normal way
+		if (c.TryGotoNext(MoveType.After, x => x.MatchLdfld<Player>(nameof(Player.touchedNoInputCounter))))
+		{
+			c.Emit(OpCodes.Ldarg_0);
+			c.EmitDelegate((int touchedNoInputCounter, Player self) =>
 			{
-				touchedNoInputCounter = 0;
-			}
+				if (self.room != null &&
+					ShelterDataManager.TryGetManager(self.room, out ShelterDataManager? manager) &&
+					manager != null &&
+					manager.holdToTrigger)
+				{
+					touchedNoInputCounter = 0;
+				}
 			
-			return touchedNoInputCounter;
-		});
+				return touchedNoInputCounter;
+			});
+		}
+		else
+		{
+			LogError("ShelterBehavior Player.Update IL part 3 fail!");
+		}
 	}
 
 	private static void RegionState_ctor(On.RegionState.orig_ctor orig, RegionState self, SaveState saveState, World world)
