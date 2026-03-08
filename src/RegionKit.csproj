@@ -20,13 +20,13 @@
     	<PathMap>$(AppOutputBase)=RegionKit\</PathMap>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<OutputPath>../mod/newest/plugins</OutputPath>
+		<Nowarn>CS1591,CS0649,CS0169</Nowarn>
 	</PropertyGroup>
 	<!-- Debug configuration. Build for release. -->
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
 		<WarningsAsErrors>$(WarningsAsErrors);NU1605;</WarningsAsErrors>
 		<DefineConstants>$(DefineConstants)TRACE;RK;REMIX</DefineConstants>
-		<Nowarn>1591</Nowarn>
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
 	<!-- Release configuration. Build for release. -->
@@ -34,7 +34,6 @@
 		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
 		<WarningsAsErrors>$(WarningsAsErrors);NU1605;</WarningsAsErrors>
 		<DefineConstants>$(DefineConstants)TRACE;RK;REMIX</DefineConstants>
-		<Nowarn>1591</Nowarn>
 		<DebugType>none</DebugType>
 	</PropertyGroup>
 	<!-- Exclude reference folder from project. -->
