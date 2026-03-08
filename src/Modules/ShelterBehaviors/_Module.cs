@@ -239,6 +239,7 @@ public static class _Module
 		int distLocRef = 40;
 		ILLabel brIfFalse = null!;
 		if (c.TryGotoNext(x => x.MatchCallOrCallvirt(typeof(Custom).GetMethod(nameof(Custom.ManhattanDistance), BindingFlags.Public | BindingFlags.Static, null, [typeof(IntVector2), typeof(IntVector2)], null)))
+			&& c.TryGotoNext(x => x.MatchLdloc(out distLocRef))
 			&& c.TryGotoNext(MoveType.AfterLabel, x => x.MatchBle(out brIfFalse)))
 		{
 			// Before ble
