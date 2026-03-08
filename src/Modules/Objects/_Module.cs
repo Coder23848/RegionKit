@@ -375,12 +375,13 @@ public static class _Module
 		{
 			if (pObj == null)
 			{
+				var camPos = self.owner.room.game.cameras[0].pos;
 				pObj = new PlacedObject(tp, null)
 				{
 					// Prevent objects from accidentally going offscreen when you place them :steamhappy:
 					pos = Custom.RestrictInRect(
-						self.owner.room.game.cameras[0].pos + Vector2.Lerp(self.owner.mousePos, new Vector2(-683f, 384f), 0.25f) + Custom.DegToVec(UnityEngine.Random.value * 360f) * 0.2f,
-						new FloatRect(0f, 0f, 1366f, 768f))
+						camPos + Vector2.Lerp(self.owner.mousePos, new Vector2(-683f, 384f), 0.25f) + Custom.DegToVec(UnityEngine.Random.value * 360f) * 0.2f,
+						new FloatRect(camPos.x, camPos.y, camPos.x + 1366f, camPos.y + 768f))
 				};
 				self.RoomSettings.placedObjects.Add(pObj);
 				return true;
