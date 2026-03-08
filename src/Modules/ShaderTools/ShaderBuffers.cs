@@ -17,7 +17,10 @@ namespace RegionKit.Modules.ShaderTools {
 			IL.FScreen.ReinitRenderTexture += ReplaceRTDepth;
 
 			_hasStencilBuffer = true;
-			Futile.screen?.ReinitRenderTexture(Futile.screen.pixelWidth);
+			if (Futile.screen != null)
+			{
+				Futile.instance.UpdateScreenWidth(Futile.screen.pixelWidth);
+			}
 		}
 
 		internal static void Uninitialize() {
