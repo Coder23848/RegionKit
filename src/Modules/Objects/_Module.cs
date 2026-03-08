@@ -94,6 +94,8 @@ public static class _Module
 			new BooleanField("2slope", false, displayName:"slippery slopes"),
 			new BooleanField("3tunnel", false, displayName:"no tunnel crawl")
 		], typeof(SlipperyZone), "SlipperyZone", GAMEPLAY_POM_CATEGORY);
+
+		RegisterManagedObject<ColoredSSFuses, ColoredSSFusesData, ManagedRepresentation>(_Enums.ColoredSSFuses.value, DECORATIONS_POM_CATEGORY);
 	}
 
 	internal static void Enable()
@@ -126,6 +128,7 @@ public static class _Module
 			NoDropwigPerchZoneHooks.Apply();
 			WaterFallDepthHooks.Apply();
 			EvilDangleFruit.Apply();
+			ColoredSSFuses.Apply();
 
 			_CompatHooks.Enable();
 
@@ -165,6 +168,7 @@ public static class _Module
 		NoDropwigPerchZoneHooks.Undo();
 		WaterFallDepthHooks.Undo();
 		//EvilDangleFruit.Undo();
+		ColoredSSFuses.Undo();
 
 		_CompatHooks.Disable();
 	}
