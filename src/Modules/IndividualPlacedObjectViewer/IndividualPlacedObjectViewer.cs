@@ -286,7 +286,6 @@ internal static partial class IndividualPlacedObjectViewer
 	{
 		ILCursor cursor = new ILCursor(il);
 		cursor.GotoNext(MoveType.After, i => i.MatchCall<Page>("Refresh"));
-		cursor.RemoveRange(26);
 		cursor.Emit(OpCodes.Ldarg_0);
 
 		cursor.EmitDelegate<Action<ObjectsPage>>((self) => 
@@ -302,5 +301,7 @@ internal static partial class IndividualPlacedObjectViewer
 				}
 			}
 		});
+
+		cursor.Emit(OpCodes.Ret);
 	}
 }
