@@ -1,3 +1,8 @@
+3.18.1
+---
+* Fixed incompatibility with Sharpener (caused the black screen issue)
+* Temporarily disabled LocustSwarm effect as it was causing crashes
+
 3.18.0
 ---
 * Completely overhauled the shelter behaviors system into separate objects
