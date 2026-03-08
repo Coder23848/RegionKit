@@ -103,6 +103,7 @@ public sealed class ModOptions : OptionsTemplate
 		("Ved_S", hexToColor("ee6225")),
 		("MagicaJaphet", hexToColor("c00a20")),
 		("k0rii", hexToColor("ea4970")),
+		("tpd1864blake", hexToColor("ff0000")),
 	];
 
 	private void InitCredits(ref int tabIndex)

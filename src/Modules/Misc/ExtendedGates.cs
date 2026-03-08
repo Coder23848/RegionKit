@@ -20,6 +20,8 @@ namespace RegionKit.Modules.Misc;
 /// </summary>
 public static class ExtendedGates
 {
+	public static bool hasSeenConstructionGateTutorial = false;
+
 	public static class ExtendedLocks
 	{
 		public interface LockData
@@ -413,6 +415,11 @@ public static class ExtendedGates
 
 			self.karmaRequirements[0] = _Enums.alt.Contains(self.karmaRequirements[0]) ? altConstruction : _Enums.Construction;
 			self.karmaRequirements[1] = _Enums.alt.Contains(self.karmaRequirements[1]) ? altConstruction : _Enums.Construction;
+
+			if (!hasSeenConstructionGateTutorial)
+			{
+				self.room.AddObject(new ConstructionGateTutorial(self.room));
+			}
 		}
 
 		//guard clause, stop crashing when there are no locks!
