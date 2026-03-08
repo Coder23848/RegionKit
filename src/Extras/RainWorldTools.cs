@@ -173,4 +173,10 @@ public static class RainWorldTools
 		Vector2 result = sum / (6f * area);
 		return result;
 	}
+
+	public static bool Contains(this IntRect rect, IntVector2 pos, bool incl = true)
+	{
+		if (incl) return pos.x >= rect.left && pos.x <= rect.right && pos.y >= rect.bottom && pos.y <= rect.top;
+		return pos.x > rect.left && pos.x < rect.right && pos.y > rect.bottom && pos.y < rect.top;
+	}
 }
