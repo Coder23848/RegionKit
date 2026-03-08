@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Project info -->
 	<PropertyGroup>
 		<LangVersion>13</LangVersion>
@@ -11,8 +11,8 @@
 		<Authors>RegionKit team</Authors>
 		<Description>All-in-one custom region dependency library.</Description>
 		<Copyright>GPL v3</Copyright>
-		<FileVersion>3.17.8</FileVersion>
-		<AssemblyVersion>3.17.8</AssemblyVersion>
+		<FileVersion>3.18.0</FileVersion>
+		<AssemblyVersion>3.18.0</AssemblyVersion>
 		<PackageReadmeFile>../README.md</PackageReadmeFile>
 		<PackageLicenseFile>../LICENSE</PackageLicenseFile>
 		<DebugType>Portable</DebugType>
