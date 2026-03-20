@@ -129,6 +129,7 @@ public static class _Module
 			WaterFallDepthHooks.Apply();
 			EvilDangleFruit.Apply();
 			ColoredSSFuses.Apply();
+			ColoredMudPit.Apply();
 
 			_CompatHooks.Enable();
 
@@ -167,8 +168,9 @@ public static class _Module
 		NoBatflyLurkZoneHooks.Undo();
 		NoDropwigPerchZoneHooks.Undo();
 		WaterFallDepthHooks.Undo();
-		//EvilDangleFruit.Undo();
+		EvilDangleFruit.Undo();
 		ColoredSSFuses.Undo();
+		ColoredMudPit.Undo();
 
 		_CompatHooks.Disable();
 	}
@@ -196,7 +198,8 @@ public static class _Module
 			|| type == TheMast._Enums.PlacedWind
 			|| type == TheMast._Enums.PlacedPearlChain
 			|| type == _Enums.NoBatflyLurkZone
-			|| type == _Enums.NoDropwigPerchZone)
+			|| type == _Enums.NoDropwigPerchZone
+			|| type == _Enums.ColoredMudPit)
 			res = new ObjectsPage.DevObjectCategories(GAMEPLAY_POM_CATEGORY);
 		else if (type == _Enums.EvilDangleFruit)
 			res = ObjectsPage.DevObjectCategories.Consumable;
@@ -275,6 +278,9 @@ public static class _Module
 					break;
 				case nameof(_Enums.BigWaterWheel):
 					self.AddObject(new BigWaterWheel(pObj, self));
+					break;
+				case nameof(_Enums.ColoredMudPit):
+					self.AddObject(new MudPit(pObj));
 					break;
 			}
 			if (pObj.data is WormgrassRectData && !wormgrassDataFound)
@@ -356,6 +362,11 @@ public static class _Module
 		{
 			CreateObjectIfNeeded();
 			rep = new BigWaterWheelRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj, tp.ToString());
+		}
+		else if (tp == _Enums.ColoredMudPit)
+		{
+			CreateObjectIfNeeded();
+			rep = new ColoredMudPit.ColoredMudPitRepresentation(self.owner, tp.ToString() + "_Rep", self, pObj, tp.ToString());
 		}
 
 		// Create object or call orig
@@ -451,6 +462,10 @@ public static class _Module
 		else if (self.type == _Enums.BigWaterWheel)
 		{
 			self.data = new BigWaterWheel.Data(self);
+		}
+		else if (self.type == _Enums.ColoredMudPit)
+		{
+			self.data = new ColoredMudPit.ColoredMudPitData(self);
 		}
 		orig(self);
 	}
